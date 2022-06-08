@@ -8,7 +8,7 @@ export default function App() {
       <h1>Hour Logger</h1>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="dayview" element={<About />} />
+        <Route path="dayview" element={<DayView />} />
       </Routes>
     </div>
   );
@@ -23,21 +23,23 @@ function Home() {
         <p>You can do this, I believe in you.</p>
       </main>
       <nav>
-        <Link to="/dayview">About</Link>
+        <Link to="/dayview">view day</Link>
       </nav>
     </>
   );
 }
 
-function About() {
+function DayView() {
   return (
     <>
       <main>
-        <h2>Who are we?</h2>
-        <p>
-          That feels like an existential question, don't you
-          think?
-        </p>
+        <h2>July 1st</h2>
+        <form>
+          <label>What did you work on today?</label>
+          <br/>
+          <input type='text' />
+          
+        </form>
       </main>
       <nav>
         <Link to="/">Home</Link>
