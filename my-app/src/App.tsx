@@ -34,16 +34,25 @@ function DayView() {
     <>
       <main>
         <h2>July 1st</h2>
-        <form>
-          <label>What did you work on today?</label>
-          <br/>
-          <input type='text' />
-          
-        </form>
+        <HowWasYourDayForm />
       </main>
       <nav>
         <Link to="/">Home</Link>
       </nav>
     </>
   );
+}
+
+class HowWasYourDayForm extends React.Component {
+  render() {
+    return (
+      <form onSubmit={() => alert("submit")}>
+        <label>What did you work on today?</label>
+        <br />
+        <textarea />
+        <br />
+        <input type="submit" value="Submit" />
+      </form>
+    );
+  }
 }
