@@ -55,52 +55,62 @@ class DayView extends React.Component {
 }
 
 class Toggle extends React.Component {
-  state: state // creates state property with type state
-  handleClick() {    this.setState((prevState: {isToggleOn:boolean}) => ({      isToggleOn: !prevState.isToggleOn    }));  };
-  constructor(props: any) { // when new Toggle(arugments) is called, this is run
+  state: state; // creates state property with type state
+  handleClick() {
+    this.setState((prevState: { isToggleOn: boolean }) => ({
+      isToggleOn: !prevState.isToggleOn,
+    }));
+  }
+  constructor(props: any) {
+    // when new Toggle(arugments) is called, this is run
     super(props); // passes props to component constructo
     // sets state property to initial state
     // prevState: enherited property??
-    this.state = {isToggleOn: true, howWasYourDay: ""};
-    // This binding is necessary to make `this` work in the callback 
+    this.state = { isToggleOn: true, howWasYourDay: "" };
+    // This binding is necessary to make `this` work in the callback
     //method bind() receives function, and take this as parameter
     //    makes it so, in the functions context, 'this' still refers to class object
-    this.handleClick = this.handleClick.bind(this);  }
+    this.handleClick = this.handleClick.bind(this);
+  }
 
-  
   render() {
     return (
-      <button onClick={this.handleClick}>        {this.state.isToggleOn ? 'ON' : 'OFF'}
+      <button onClick={this.handleClick}>
+        {" "}
+        {this.state.isToggleOn ? "ON" : "OFF"}
       </button>
     );
   }
 }
 
 class HowWasYourDayForm extends React.Component {
-  state: {value: string}
-  constructor(props: any){
-    super(props)
-    this.state = {value: ""}
+  state: { value: string };
+  constructor(props: any) {
+    super(props);
+    this.state = { value: "" };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-
   handleChange(event: any) {
-    this.setState({value: event.target.value})
+    this.setState({ value: event.target.value });
   }
-  
-  handleSubmit(event: any){
-    alert('submitted' + this.state.value);
+
+  handleSubmit(event: any) {
+    alert("submitted" + this.state.value);
     event.preventDefault();
   }
-  
+
   render() {
     return (
       <form onSubmit={this.handleSubmit}>
         <label>What did you work on today?</label>
         <br />
-        <input type="text" value={this.state.value} onChange={this.handleChange} />
+        <input
+          type="text"
+          value={this.state.value}
+          onChange={this.handleChange}
+        />
         <br />
         <input type="submit" value="Submit" />
       </form>
