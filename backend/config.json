@@ -1,0 +1,8 @@
+{
+    "database": {
+    "ip":      "localhost",
+    "port":   "3004",
+    "username": "string",
+    "password": "string"
+    }
+}
