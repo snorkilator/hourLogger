@@ -43,8 +43,8 @@ class DayView extends React.Component {
       <>
         <main>
           <h2>July 1st</h2>
-          <Toggle />
-          <HowWasYourDayForm />
+          <Form formID="Goals" />
+          <Form formID="Summary" />
         </main>
         <nav>
           <Link to="/">Home</Link>
@@ -54,39 +54,16 @@ class DayView extends React.Component {
   }
 }
 
-class Toggle extends React.Component {
-  state: state; // creates state property with type state
-  handleClick() {
-    this.setState((prevState: { isToggleOn: boolean }) => ({
-      isToggleOn: !prevState.isToggleOn,
-    }));
-  }
-  constructor(props: any) {
-    // when new Toggle(arugments) is called, this is run
-    super(props); // passes props to component constructo
-    // sets state property to initial state
-    // prevState: enherited property??
-    this.state = { isToggleOn: true, howWasYourDay: "" };
-    // This binding is necessary to make `this` work in the callback
-    //method bind() receives function, and take this as parameter
-    //    makes it so, in the functions context, 'this' still refers to class object
-    this.handleClick = this.handleClick.bind(this);
-  }
-
-  render() {
-    return (
-      <button onClick={this.handleClick}>
-        {" "}
-        {this.state.isToggleOn ? "ON" : "OFF"}
-      </button>
-    );
-  }
-}
-
-class HowWasYourDayForm extends React.Component {
+type props = {formID: string}
+class Form extends React.Component {
+ 
+  props: props;
   state: { value: string };
-  constructor(props: any) {
+  formID: string;
+  constructor(props: props) {
     super(props);
+    this.props = props
+    this.formID = props.formID;
     this.state = { value: "" };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -97,20 +74,16 @@ class HowWasYourDayForm extends React.Component {
   }
 
   handleSubmit(event: any) {
-    alert("submitted" + this.state.value);
+    console.log(this.formID + " " + this.state.value);
     event.preventDefault();
   }
 
   render() {
     return (
       <form onSubmit={this.handleSubmit}>
-        <label>What did you work on today?</label>
+        <label>{this.formID}</label>
         <br />
-        <input
-          type="text"
-          value={this.state.value}
-          onChange={this.handleChange}
-        />
+        <textarea value={this.state.value} onChange={this.handleChange} />
         <br />
         <input type="submit" value="Submit" />
       </form>
