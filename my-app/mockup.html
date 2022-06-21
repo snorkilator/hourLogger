@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title></title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="" />
+  </head>
+  <body>
+    <h1>Hour Logger</h1>
+    <main>
+      <table >
+        <thead>
+            <td>HRS</td>
+            <td>description</td>
+            <td></td>
+        </thead>
+        <tbody id="table">
+          <tr id="row">
+            <td>3</td>
+            <td>Writing resume</td>
+            <td onclick="document.getElementById('row').remove()">X</td>
+          </tr>
+          <tr>
+            <td><input type="number" value="Write in here"></input></td>
+            <td><input type="text"></input></td>
+            <td>X</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Total HRS</td>
+            <td> </td>
+            <td onclick="document.getElementById('table').innerHTML = document.getElementById('table').innerHTML + '<tr><td>test</td><td>test</td><td>test</td></tr>'">+</td>
+          </tr>
+        </tfoot>
+      </table>
+      <h2>July 1st</h2>
+      <form>
+        <label>Goals</label><br /><textarea></textarea><br /><input
+          type="submit"
+          value="Submit"
+        />
+      </form>
+      <form>
+        <label>Summary</label><br /><textarea></textarea><br /><input
+          type="submit"
+          value="Submit"
+        />
+      </form>
+    </main>
+    <nav><a href="/">Home</a></nav>
+  </body>
+</html>
