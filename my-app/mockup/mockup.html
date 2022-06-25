@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title></title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="index.css" />
+    <script>function deleteRow(){document.getElementById('row').remove()};
+      function addRow(){document.getElementById('table').innerHTML = document.getElementById('table').innerHTML + '<tr><td>4</td><td>brainstorming</td><td>X</td></tr>'};
+    </script>
+  </head>
+  <body>
+    <h1><a href="homepage.html">Hour Logger</a></h1>
+    <main>
+      <h2>July 1st</h2>
+      <table >
+        <thead>
+            <td>HRS</td>
+            <td>description</td>
+            <td></td>
+        </thead>
+        <tbody id="table">
+          <tr id="row">
+            <td>3</td>
+            <td>Writing resume</td>
+            <td> <button onclick="deleteRow()">X</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td ><form ><input type="text" value="4"></input></form></td>
+            <td><input type="text" value="brainstorming"></input></td>
+            <td></td>
+          </tr>
+          <tr>  
+            <td>Total HRS: 7</td>
+            <td> </td>
+            <td><button onclick="addRow()">+</button></td>
+          </tr>
+        </tfoot>
+      </table>
+      <form>
+        <label>Goals</label><br /><textarea></textarea><br />
+      </form>
+      <form>
+        <label>Summary</label><br /><textarea></textarea><br />
+      </form>
+      <button>save</button>
+      <button url="homepage.html">delete</button>
+    </main>
+  </body>
+</html>
