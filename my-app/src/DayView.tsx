@@ -24,11 +24,45 @@ export class DayView extends React.Component {
   }
 }
 
-type row = { hrs: number; activity: string };
+var count: number = 0;
+function counter(): number {
+  count++;
+  return count;
+}
+
+var tablecounterlock: boolean = false;
+
+//lock locks table counter
+function lock() {
+  tablecounterlock = true;
+}
+
+//unlock unlocks table counter
+function unlock() {
+  tablecounterlock = false;
+}
+//locked tell you if table counter is locked
+// @returns boolean
+function locked(): boolean {
+  return tablecounterlock;
+}
+
+type row = { id: number; hrs: number; activity: string };
 class ActivitiesTable extends React.Component {
   state: { table: row[]; activity: string };
 
-  enterRow(event: any) {}
+  //deleterow deletes row from activity
+  deleteRow(id: number): boolean {
+    let tempA = this.state.table;
+    for (let i = 0; i < tempA.length; i++) {
+      if (tempA[i].id === id) {
+        tempA.splice(i, 1);
+        this.setState({ table: tempA });
+        return true;
+      }
+    }
+    return false;
+  }
 
   handleChange(event: any) {
     this.setState({ activity: event.target.value });
@@ -38,26 +72,29 @@ class ActivitiesTable extends React.Component {
 
   handleSubmit(event: any) {
     console.log(this.state.activity);
-    let tempA = this.state.table;
-    tempA.push({ hrs: 2, activity: this.state.activity });
-    this.setState({table: tempA})
-    this.setState({activity: ""})
+    if (!locked()) {
+      lock();
+      let tempA = this.state.table;
+      tempA.push({ id: counter(), hrs: 2, activity: this.state.activity });
+      this.setState({ table: tempA });
+      this.setState({ activity: "" });
+      unlock();
+    } else {
+      alert("could not add activity row");
+    }
     event.preventDefault();
   }
+
   constructor(state: any, props: null) {
     super(state);
+    this.deleteRow = this.deleteRow.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
 
     this.state = {
-      table: [
-        { hrs: 1, activity: "lala" },
-        { hrs: 1, activity: "lala" },
-        { hrs: 1, activity: "lala" },
-      ],
+      table: [],
       activity: "",
     };
-    this.enterRow = this.enterRow.bind(this);
   }
   render(): React.ReactNode {
     return (
@@ -71,11 +108,11 @@ class ActivitiesTable extends React.Component {
           <tbody>
             {this.state.table.map((item) => {
               return (
-                <tr id="row">
+                <tr id={item.id.toString()}>
                   <td>{item.hrs}</td>
                   <td>{item.activity}</td>
                   <td>
-                    <button>X</button>
+                    <button onClick={() => this.deleteRow(item.id)}>X</button>
                   </td>
                 </tr>
               );
@@ -101,10 +138,6 @@ class ActivitiesTable extends React.Component {
             </tr>
             <tr>
               <td>Total HRS: 7</td>
-              <td> </td>
-              <td>
-                <button onClick={this.enterRow}>+</button>
-              </td>
             </tr>
           </tfoot>
         </table>
