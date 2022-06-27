@@ -1,0 +1,26 @@
+TABLE REQUIREMENTS
+each has a stable and unique identifier
+order is the same everytime page is loaded
+you can delete one
+there can be duplicate rows
+
+
+use counter to maintain next available identifier
+store counter in databse
+
+when new row is added:
+    add to browser datastructure
+        check if table counter is locked
+            if locked return error
+            else
+                querry for current counter
+                    enter row with received identifier into datasructure
+                unlock table
+    send new row to database
+
+When row is deleted:
+    querry delete message
+    if good,
+        update browser table
+    if not good,
+        send alert(not deleted)

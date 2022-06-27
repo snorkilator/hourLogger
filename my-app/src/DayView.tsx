@@ -1,56 +1,65 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import "./App.css";
-type props = { formID: string };
 
-export class DayView extends React.Component {
-  constructor(props: any, state: any) {
-    super(props, state);
-  }
-  render(): React.ReactNode {
-    return (
-      <>
-        <main>
-          <h2>July 1st</h2>
-          <ActivitiesTable />
-          <Form formID="Goals" />
-          <Form formID="Summary" />
-        </main>
-        <nav>
-          <Link to="/">Home</Link>
-        </nav>
-      </>
-    );
-  }
-}
+type pageData = { goals: string; summary: string; table: row[] };
+export let DayView = () => {
+  let row: row[] = [];
+  const [goals, setGoals] = React.useState("");
+  const [summary, setSummary] = React.useState("");
+  const [table, setTable] = React.useState(row);
 
-var count: number = 0;
-function counter(): number {
-  count++;
-  return count;
-}
-
-var tablecounterlock: boolean = false;
-
-//lock locks table counter
-function lock() {
-  tablecounterlock = true;
-}
-
-//unlock unlocks table counter
-function unlock() {
-  tablecounterlock = false;
-}
-//locked tell you if table counter is locked
-// @returns boolean
-function locked(): boolean {
-  return tablecounterlock;
-}
+  return (
+    <>
+      <main>
+        <h2>date</h2>
+        <ActivitiesTable />
+        <Form formID="Goals" value={goals} setState={setGoals} />
+        <Form formID="Summary" value={summary} setState={setSummary} />
+      </main>
+      <nav>
+        <Link to="/">Home</Link>
+      </nav>
+    </>
+  );
+};
 
 type row = { id: number; hrs: number; activity: string };
 class ActivitiesTable extends React.Component {
-  state: { table: row[]; activity: string };
+  count: number = 0;
+  counter(): number {
+    this.count++;
+    return this.count;
+  }
 
+  tablecounterlock: boolean = false;
+
+  //lock locks table counter
+  lock() {
+    this.tablecounterlock = true;
+  }
+
+  //unlock unlocks table counter
+  unlock() {
+    this.tablecounterlock = false;
+  }
+  //locked tell you if table counter is locked
+  // @returns boolean
+  locked(): boolean {
+    return this.tablecounterlock;
+  }
+  state: { table: row[]; hrs: string; activity: string };
+  sumHrs(): number {
+    let count = 0;
+    for (let i = 0; i < this.state.table.length; i++) {
+      let row = this.state.table[i].hrs;
+      if (row) {
+        console.log(row);
+        count += row;
+      }
+    }
+    return count;
+  }
   //deleterow deletes row from activity
   deleteRow(id: number): boolean {
     let tempA = this.state.table;
@@ -63,81 +72,103 @@ class ActivitiesTable extends React.Component {
     }
     return false;
   }
-
-  handleChange(event: any) {
+  //handleChangeActivity updates state of activity on change
+  handleChangeActivity(event: any) {
     this.setState({ activity: event.target.value });
 
     console.log(this.state.activity);
   }
 
+  //handleChangeHrs updates state of hrs on change
+  handleChangeHrs(event: any) {
+    this.setState({ hrs: event.target.value });
+
+    console.log(this.state.hrs);
+  }
+
+  //handleSubmit adds row entry to activity table
   handleSubmit(event: any) {
     console.log(this.state.activity);
-    if (!locked()) {
-      lock();
+    if (!this.locked()) {
+      this.lock();
       let tempA = this.state.table;
-      tempA.push({ id: counter(), hrs: 2, activity: this.state.activity });
+      tempA.push({
+        id: this.counter(),
+        hrs: Number.parseFloat(this.state.hrs),
+        activity: this.state.activity,
+      });
       this.setState({ table: tempA });
-      this.setState({ activity: "" });
-      unlock();
+      this.unlock();
     } else {
       alert("could not add activity row");
     }
     event.preventDefault();
   }
 
-  constructor(state: any, props: null) {
-    super(state);
+  constructor(props: any) {
+    super(props);
     this.deleteRow = this.deleteRow.bind(this);
-    this.handleChange = this.handleChange.bind(this);
+    this.handleChangeActivity = this.handleChangeActivity.bind(this);
+    this.handleChangeHrs = this.handleChangeHrs.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.sumHrs = this.sumHrs.bind(this);
 
     this.state = {
       table: [],
       activity: "",
+      hrs: "",
     };
+  }
+
+  //renderTable returns a react node with table rows corresponding to the activitytable array elements.
+  renderTable() {
+    return this.state.table.map((item) => {
+      return (
+        <tr id={item.id.toString()}>
+          <td>{item.hrs}</td>
+          <td>{item.activity}</td>
+          <td>
+            <button onClick={() => this.deleteRow(item.id)}>X</button>
+          </td>
+        </tr>
+      );
+    });
   }
   render(): React.ReactNode {
     return (
       <div>
         <table className="activitiesTable">
           <thead>
-            <td>HRS</td>
+            <td>Hours</td>
             <td>description</td>
-            <td></td>
           </thead>
-          <tbody>
-            {this.state.table.map((item) => {
-              return (
-                <tr id={item.id.toString()}>
-                  <td>{item.hrs}</td>
-                  <td>{item.activity}</td>
-                  <td>
-                    <button onClick={() => this.deleteRow(item.id)}>X</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
+          <tbody>{this.renderTable()}</tbody>
           <tfoot>
             <tr>
               <td>
-                <form>
-                  <input type="text" value="4"></input>
-                </form>
+                <input
+                  type="number"
+                  value={this.state.hrs}
+                  onChange={this.handleChangeHrs}
+                ></input>
               </td>
               <td>
-                <form onSubmit={this.handleSubmit}>
-                  <input
-                    type="text"
-                    value={this.state.activity}
-                    onChange={this.handleChange}
-                  ></input>
-                </form>
+                <input
+                  type="text"
+                  value={this.state.activity}
+                  onChange={this.handleChangeActivity}
+                ></input>
               </td>
-              <td></td>
+              <td>
+                <button onClick={this.handleSubmit}>+</button>
+              </td>
             </tr>
             <tr>
-              <td>Total HRS: 7</td>
+              <td>
+                <div>
+                  <div>Total: {this.sumHrs()}</div>
+                </div>
+              </td>
             </tr>
           </tfoot>
         </table>
@@ -146,40 +177,24 @@ class ActivitiesTable extends React.Component {
   }
 }
 
-class Form extends React.Component {
-  props: props;
-  state: { value: string };
-  formID: string;
-  constructor(props: props) {
-    super(props);
-    this.props = props;
-    this.formID = props.formID;
-    this.state = { value: "" };
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  handleChange(event: any) {
-    this.setState({ value: event.target.value });
-    console.log(this.state.value);
-  }
-
-  handleSubmit(event: any) {
-    console.log(this.formID + " " + this.state.value);
+let Form = (props: { formID: string; value: string; setState: any }) => {
+  function handleSubmit(event: any) {
+    console.log(props.formID + " " + props.value);
     event.preventDefault();
   }
 
-  render() {
-    return (
-      <div>
-        <form onSubmit={this.handleSubmit}>
-          <label>{this.formID}</label>
-          <br />
-          <textarea value={this.state.value} onChange={this.handleChange} />
-          <br />
-          <input type="submit" value="Submit" />
-        </form>
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <label>{props.formID}</label>
+        <br />
+        <textarea
+          value={props.value}
+          onChange={(event) => props.setState(event.target.value)}
+        />
+        <br />
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+  );
+};
