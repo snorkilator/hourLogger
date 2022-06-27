@@ -24,35 +24,50 @@ export let DayView = () => {
   );
 };
 
-type row = { id: number; hrs: number; activity: string };
-class ActivitiesTable extends React.Component {
-  count: number = 0;
-  counter(): number {
-    this.count++;
-    return this.count;
+class row {
+  id: number;
+  hrs: number;
+  activity: string;
+  constructor() {
+    this.id = 0;
+    this.hrs = 0;
+    this.activity = "";
+  }
+}
+function ActivitiesTable() {
+  type s = { table: row[]; hrs: string; activity: string };
+  let [state, setState] = React.useState({
+    table: [new row()],
+    hrs: "",
+    activity: "",
+  });
+  let count: number = 0;
+  function counter(): number {
+    count++;
+    return count;
   }
 
-  tablecounterlock: boolean = false;
+  let tablecounterlock: boolean = false;
 
   //lock locks table counter
-  lock() {
-    this.tablecounterlock = true;
+  function lock() {
+    tablecounterlock = true;
   }
 
   //unlock unlocks table counter
-  unlock() {
-    this.tablecounterlock = false;
+  function unlock() {
+    tablecounterlock = false;
   }
   //locked tell you if table counter is locked
   // @returns boolean
-  locked(): boolean {
-    return this.tablecounterlock;
+  function locked(): boolean {
+    return tablecounterlock;
   }
-  state: { table: row[]; hrs: string; activity: string };
-  sumHrs(): number {
+
+  function sumHrs(): number {
     let count = 0;
-    for (let i = 0; i < this.state.table.length; i++) {
-      let row = this.state.table[i].hrs;
+    for (let i = 0; i < state.table.length; i++) {
+      let row = state.table[i].hrs;
       if (row) {
         console.log(row);
         count += row;
@@ -61,120 +76,111 @@ class ActivitiesTable extends React.Component {
     return count;
   }
   //deleterow deletes row from activity
-  deleteRow(id: number): boolean {
-    let tempA = this.state.table;
+  function deleteRow(id: number): boolean {
+    let tempA = state.table;
     for (let i = 0; i < tempA.length; i++) {
       if (tempA[i].id === id) {
         tempA.splice(i, 1);
-        this.setState({ table: tempA });
+        setState({ table: tempA, activity: state.activity, hrs: state.hrs });
         return true;
       }
     }
     return false;
   }
   //handleChangeActivity updates state of activity on change
-  handleChangeActivity(event: any) {
-    this.setState({ activity: event.target.value });
+  function handleChangeActivity(event: any) {
+    setState({
+      activity: event.target.value,
+      hrs: state.hrs,
+      table: state.table,
+    });
 
-    console.log(this.state.activity);
+    console.log(state.activity);
   }
 
   //handleChangeHrs updates state of hrs on change
-  handleChangeHrs(event: any) {
-    this.setState({ hrs: event.target.value });
+  function handleChangeHrs(event: any) {
+    setState({
+      activity: state.activity,
+      hrs: event.target.value,
+      table: state.table,
+    });
 
-    console.log(this.state.hrs);
+    console.log(state.hrs);
   }
 
   //handleSubmit adds row entry to activity table
-  handleSubmit(event: any) {
-    console.log(this.state.activity);
-    if (!this.locked()) {
-      this.lock();
-      let tempA = this.state.table;
+  function handleSubmit(event: any) {
+    console.log(state.activity);
+    if (!locked()) {
+      lock();
+      let tempA = state.table;
       tempA.push({
-        id: this.counter(),
-        hrs: Number.parseFloat(this.state.hrs),
-        activity: this.state.activity,
+        id: counter(),
+        hrs: Number.parseFloat(state.hrs),
+        activity: state.activity,
       });
-      this.setState({ table: tempA });
-      this.unlock();
+      setState({ activity: "", hrs: "", table: tempA });
+      unlock();
     } else {
       alert("could not add activity row");
     }
     event.preventDefault();
   }
 
-  constructor(props: any) {
-    super(props);
-    this.deleteRow = this.deleteRow.bind(this);
-    this.handleChangeActivity = this.handleChangeActivity.bind(this);
-    this.handleChangeHrs = this.handleChangeHrs.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.sumHrs = this.sumHrs.bind(this);
-
-    this.state = {
-      table: [],
-      activity: "",
-      hrs: "",
-    };
-  }
-
   //renderTable returns a react node with table rows corresponding to the activitytable array elements.
-  renderTable() {
-    return this.state.table.map((item) => {
+  function renderTable() {
+    return state.table.map((item) => {
       return (
         <tr id={item.id.toString()}>
           <td>{item.hrs}</td>
           <td>{item.activity}</td>
           <td>
-            <button onClick={() => this.deleteRow(item.id)}>X</button>
+            <button onClick={() => deleteRow(item.id)}>X</button>
           </td>
         </tr>
       );
     });
   }
-  render(): React.ReactNode {
-    return (
-      <div>
-        <table className="activitiesTable">
-          <thead>
-            <td>Hours</td>
-            <td>description</td>
-          </thead>
-          <tbody>{this.renderTable()}</tbody>
-          <tfoot>
-            <tr>
-              <td>
-                <input
-                  type="number"
-                  value={this.state.hrs}
-                  onChange={this.handleChangeHrs}
-                ></input>
-              </td>
-              <td>
-                <input
-                  type="text"
-                  value={this.state.activity}
-                  onChange={this.handleChangeActivity}
-                ></input>
-              </td>
-              <td>
-                <button onClick={this.handleSubmit}>+</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div>
-                  <div>Total: {this.sumHrs()}</div>
-                </div>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    );
-  }
+  return (
+    <div>
+      <table className="activitiesTable">
+        <thead>
+          <td>Hours</td>
+          <td>description</td>
+        </thead>
+        <tbody>{renderTable()}</tbody>
+        <tfoot>
+          <tr>
+            <td>
+              <input
+                type="number"
+                value={state.hrs}
+                onChange={handleChangeHrs}
+              ></input>
+            </td>
+            <td>
+              <input
+                type="text"
+                value={state.activity}
+                onChange={handleChangeActivity}
+              ></input>
+            </td>
+            <td>
+              <button onClick={handleSubmit}>+</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div>
+                <div>Total: {sumHrs()}</div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
 }
 
 let Form = (props: { formID: string; value: string; setState: any }) => {
