@@ -23,21 +23,15 @@ export let DayView = () => {
     </>
   );
 };
-
-class row {
+type row = {
   id: number;
   hrs: number;
   activity: string;
-  constructor() {
-    this.id = 0;
-    this.hrs = 0;
-    this.activity = "";
-  }
-}
+};
 function ActivitiesTable() {
-  type s = { table: row[]; hrs: string; activity: string };
+  let rows: row[] = [];
   let [state, setState] = React.useState({
-    table: [new row()],
+    table: rows,
     hrs: "",
     activity: "",
   });
@@ -76,16 +70,17 @@ function ActivitiesTable() {
     return count;
   }
   //deleterow deletes row from activity
-  function deleteRow(id: number): boolean {
+  function deleteRow(event: any, id: number) {
+    console.log(state.table);
     let tempA = state.table;
     for (let i = 0; i < tempA.length; i++) {
       if (tempA[i].id === id) {
+        console.log(i);
         tempA.splice(i, 1);
         setState({ table: tempA, activity: state.activity, hrs: state.hrs });
-        return true;
       }
     }
-    return false;
+    console.log(state.table);
   }
   //handleChangeActivity updates state of activity on change
   function handleChangeActivity(event: any) {
@@ -111,6 +106,7 @@ function ActivitiesTable() {
 
   //handleSubmit adds row entry to activity table
   function handleSubmit(event: any) {
+    event.preventDefault();
     console.log(state.activity);
     if (!locked()) {
       lock();
@@ -125,7 +121,27 @@ function ActivitiesTable() {
     } else {
       alert("could not add activity row");
     }
-    event.preventDefault();
+    let nextField = document.getElementById("hours");
+    if (nextField) {
+      nextField.focus();
+    }
+    // console.log(nextField);
+  }
+
+  function hrsOnEnter(event: any) {
+    if (event.keyCode == 13) {
+      event.preventDefault();
+      let nextField = document.getElementById("activity");
+      if (nextField) {
+        nextField.focus();
+      }
+    }
+  }
+  function activityOnEnter(event: any) {
+    if (event.keyCode == 13) {
+      event.preventDefault();
+      handleSubmit(event);
+    }
   }
 
   //renderTable returns a react node with table rows corresponding to the activitytable array elements.
@@ -136,7 +152,12 @@ function ActivitiesTable() {
           <td>{item.hrs}</td>
           <td>{item.activity}</td>
           <td>
-            <button onClick={() => deleteRow(item.id)}>X</button>
+            <button
+              type="button"
+              onClick={(event) => deleteRow(event, item.id)}
+            >
+              X
+            </button>
           </td>
         </tr>
       );
@@ -144,41 +165,42 @@ function ActivitiesTable() {
   }
   return (
     <div>
-      <table className="activitiesTable">
-        <thead>
-          <td>Hours</td>
-          <td>description</td>
-        </thead>
-        <tbody>{renderTable()}</tbody>
-        <tfoot>
-          <tr>
-            <td>
-              <input
-                type="number"
-                value={state.hrs}
-                onChange={handleChangeHrs}
-              ></input>
-            </td>
-            <td>
-              <input
-                type="text"
-                value={state.activity}
-                onChange={handleChangeActivity}
-              ></input>
-            </td>
-            <td>
-              <button onClick={handleSubmit}>+</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div>
-                <div>Total: {sumHrs()}</div>
-              </div>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+      <form onSubmit={handleSubmit}>
+        <table className="activitiesTable">
+          <thead>
+            <td>Hours</td>
+            <td>description</td>
+          </thead>
+          <tbody>
+            {renderTable()}
+            <tr>
+              <td>
+                <input
+                  id="hours"
+                  type="number"
+                  value={state.hrs}
+                  onChange={handleChangeHrs}
+                  onKeyDown={hrsOnEnter}
+                ></input>
+              </td>
+              <td>
+                <input
+                  id="activity"
+                  type="text"
+                  value={state.activity}
+                  onChange={handleChangeActivity}
+                ></input>
+              </td>
+              <td>
+                <input type="submit" value="+" />
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <td>Total: {sumHrs()}</td>
+          </tfoot>
+        </table>
+      </form>
     </div>
   );
 }
