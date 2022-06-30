@@ -24,7 +24,7 @@ func main() {
 		resp.Write(body)
 	})
 
-	fs := http.FileServer(http.Dir("/home/daniel/Documents/hourLogger/my-app/build"))
+	fs := http.FileServer(http.Dir("../my-app/build"))
 	http.Handle("/", fs)
 	fmt.Println(http.ListenAndServe(":3000", nil))
 

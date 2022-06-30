@@ -31,7 +31,7 @@ export let DayView = () => {
     let JSONStr = JSON.stringify({ goals, summary, state });
     let request = new XMLHttpRequest();
     request.open("put", "/update");
-    request.addEventListener('load', event => { alert()})
+    request.addEventListener('load', event => { console.log("sent:" + JSONStr)})
     request.send(JSONStr);
 
   };
