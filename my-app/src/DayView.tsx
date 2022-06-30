@@ -1,3 +1,4 @@
+import { log } from "node:console";
 import { ReadableStreamBYOBRequest } from "node:stream/web";
 import * as React from "react";
 import { Link } from "react-router-dom";
@@ -28,14 +29,16 @@ export let DayView = () => {
   });
 
   let sendData = () => {
-    let JSONStr = JSON.stringify({ goals, summary, state });
+    console.log("interval send: "+{ goals, summary, state });
+    let JSONStr = JSON.stringify({ goals, state });
     let request = new XMLHttpRequest();
     request.open("put", "/update");
-    request.addEventListener('load', event => { console.log("sent:" + JSONStr)})
+    request.addEventListener('load', event => { console.log("message received")})
+    console.log(JSONStr)
     request.send(JSONStr);
 
   };
-  setInterval(sendData, 10000)
+  sendData()
   return (
     <>
       <main>
@@ -155,12 +158,6 @@ function ActivitiesTable(props: { value: state; onChange: any }) {
       if (nextField) {
         nextField.focus();
       }
-    }
-  }
-  function activityOnEnter(event: any) {
-    if (event.keyCode == 13) {
-      event.preventDefault();
-      handleSubmit(event);
     }
   }
 

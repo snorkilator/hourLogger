@@ -12,21 +12,62 @@ import (
 	// _ "github.com/lib/pq"
 )
 
+// save page command comes in
+/*
+validate that it fits the JSON object struct
+	if it doesn't: send failed to save error ** need error type for api
+	it does: send query to save to database
+		if received confirmed, send happy message to client
+		if not received confirmed, send "could not save to client"
+*/
+
 //starts server
+
+type dbError interface {
+	Error() string
+}
+
+//checks that at least item is present of struct have content
+func (f *formContent) tableHasItem() bool {
+	if len(f.State.Table) > 0 {
+		return true
+	}
+	return false
+}
 func main() {
-	conf := getConf()
+
+	conf, err := getConf()
+	if err != nil {
+		log.Printf("getConf: %s", err)
+	}
 	fmt.Print(conf)
+
 	http.HandleFunc("/update/", func(resp http.ResponseWriter, req *http.Request) {
 		body := make([]byte, 2000)
-		req.Body.Read(body)
-		fmt.Println(string(body))
-		fmt.Println(getJason(body).state.Table)
-		resp.Write(body)
+		n, err := req.Body.Read(body)
+		if err != nil && err.Error() != "EOF" {
+			log.Println("/update/ handler: " + err.Error())
+		}
+		form, err := getJason(body[:n])
+
+		if !form.tableHasItem() {
+			http.Error(resp, "table is empty", http.StatusExpectationFailed)
+			return
+		}
+
+		if err != nil {
+			str := fmt.Sprintf("/update/ handler: getJason: %s", err)
+			log.Println(str)
+			http.Error(resp, str, 404)
+			return
+		}
+		resp.Write([]byte(fmt.Sprint(form)))
+		fmt.Println(form)
 	})
 
 	fs := http.FileServer(http.Dir("../my-app/build"))
 	http.Handle("/", fs)
-	fmt.Println(http.ListenAndServe(":3000", nil))
+	fmt.Println(http.ListenAndServe(":"+conf.Database.Port, nil))
 
 	/*
 		read from config file
@@ -80,32 +121,37 @@ type config struct {
 	} `json:"database"`
 }
 
-func getConf() config {
+func getConf() (config, error) {
 	var conf = new(config)
-	f, _ := os.ReadFile("./config.json")
-	fmt.Println(f)
-	if err := json.Unmarshal(f, &conf); err != nil {
-		fmt.Print(err)
+	f, err := os.ReadFile("./config.json")
+	if err != nil {
+		return config{}, err
 	}
-	return *conf
+	if err = json.Unmarshal(f, &conf); err != nil {
+		return config{}, err
+	}
+	return *conf, nil
 }
 
-type state struct {
-	Table    []string `json:"table"`
-	Hrs      string   `json:"hrs"`
-	Activity string   `json:"activity"`
+type Row struct {
+	Id       int     `json:"id"`
+	Hrs      float32 `json:"hrs"`
+	Activity string  `json:"activity"`
+}
+
+type State struct {
+	Table    []Row  `json:"table"`
+	Hrs      string `json:"hrs"`
+	Activity string `json:"activity"`
 }
 type formContent struct {
 	Summary string `json:"summary"`
 	Goals   string `json:"goals"`
-	state   state  `json:"goals"`
+	State   State  `json:"state"`
 }
 
-func getJason(raw []byte) *formContent {
+func getJason(raw []byte) (*formContent, error) {
 	var form = new(formContent)
-
-	if err := json.Unmarshal(raw, &form); err != nil {
-		log.Println("error", err)
-	}
-	return form
+	err := json.Unmarshal(raw, &form)
+	return form, err
 }
