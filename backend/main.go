@@ -5,16 +5,28 @@ import (
 	_ "database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
 	_ "net/http"
 	"os"
-
-	_ "github.com/lib/pq"
+	// _ "github.com/lib/pq"
 )
 
 //starts server
 func main() {
 	conf := getConf()
 	fmt.Print(conf)
+	http.HandleFunc("/update/", func(resp http.ResponseWriter, req *http.Request) {
+		body := make([]byte, 2000)
+		req.Body.Read(body)
+		fmt.Println(string(body))
+		fmt.Println(getJason(body).state.Table)
+		resp.Write(body)
+	})
+
+	fs := http.FileServer(http.Dir("/home/daniel/Documents/hourLogger/my-app/build"))
+	http.Handle("/", fs)
+	fmt.Println(http.ListenAndServe(":3000", nil))
 
 	/*
 		read from config file
@@ -76,4 +88,24 @@ func getConf() config {
 		fmt.Print(err)
 	}
 	return *conf
+}
+
+type state struct {
+	Table    []string `json:"table"`
+	Hrs      string   `json:"hrs"`
+	Activity string   `json:"activity"`
+}
+type formContent struct {
+	Summary string `json:"summary"`
+	Goals   string `json:"goals"`
+	state   state  `json:"goals"`
+}
+
+func getJason(raw []byte) *formContent {
+	var form = new(formContent)
+
+	if err := json.Unmarshal(raw, &form); err != nil {
+		log.Println("error", err)
+	}
+	return form
 }

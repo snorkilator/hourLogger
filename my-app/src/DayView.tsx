@@ -1,6 +1,18 @@
+import { ReadableStreamBYOBRequest } from "node:stream/web";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import "./App.css";
+
+type row = {
+  id: number;
+  hrs: number;
+  activity: string;
+};
+type state = {
+  table: row[];
+  hrs: string;
+  activity: string;
+};
 
 type pageData = { goals: string; summary: string; table: row[] };
 export let DayView = () => {
@@ -8,12 +20,27 @@ export let DayView = () => {
   const [goals, setGoals] = React.useState("");
   const [summary, setSummary] = React.useState("");
   const [table, setTable] = React.useState(row);
+  let rows: row[] = [];
+  let [state, setState] = React.useState({
+    table: rows,
+    hrs: "",
+    activity: "",
+  });
 
+  let sendData = () => {
+    let JSONStr = JSON.stringify({ goals, summary, state });
+    let request = new XMLHttpRequest();
+    request.open("put", "/update");
+    request.addEventListener('load', event => { alert()})
+    request.send(JSONStr);
+
+  };
+  setInterval(sendData, 10000)
   return (
     <>
       <main>
         <h2>date</h2>
-        <ActivitiesTable />
+        <ActivitiesTable value={state} onChange={setState} />
         <Form formID="Goals" value={goals} setState={setGoals} />
         <Form formID="Summary" value={summary} setState={setSummary} />
       </main>
@@ -23,19 +50,9 @@ export let DayView = () => {
     </>
   );
 };
-type row = {
-  id: number;
-  hrs: number;
-  activity: string;
-};
-function ActivitiesTable() {
-  let rows: row[] = [];
-  let [state, setState] = React.useState({
-    table: rows,
-    hrs: "",
-    activity: "",
-  });
-  let count: number = 0;
+
+let count: number = 0;
+function ActivitiesTable(props: { value: state; onChange: any }) {
   function counter(): number {
     count++;
     return count;
@@ -60,8 +77,8 @@ function ActivitiesTable() {
 
   function sumHrs(): number {
     let count = 0;
-    for (let i = 0; i < state.table.length; i++) {
-      let row = state.table[i].hrs;
+    for (let i = 0; i < props.value.table.length; i++) {
+      let row = props.value.table[i].hrs;
       if (row) {
         console.log(row);
         count += row;
@@ -71,52 +88,56 @@ function ActivitiesTable() {
   }
   //deleterow deletes row from activity
   function deleteRow(event: any, id: number) {
-    console.log(state.table);
-    let tempA = state.table;
+    // console.log("delete row:" + "Id: " + id.toString());
+    let tempA = props.value.table;
     for (let i = 0; i < tempA.length; i++) {
       if (tempA[i].id === id) {
         console.log(i);
         tempA.splice(i, 1);
-        setState({ table: tempA, activity: state.activity, hrs: state.hrs });
+        props.onChange({
+          table: tempA,
+          activity: props.value.activity,
+          hrs: props.value.hrs,
+        });
       }
     }
-    console.log(state.table);
+    console.log(props.value.table);
   }
   //handleChangeActivity updates state of activity on change
   function handleChangeActivity(event: any) {
-    setState({
+    props.onChange({
       activity: event.target.value,
-      hrs: state.hrs,
-      table: state.table,
+      hrs: props.value.hrs,
+      table: props.value.table,
     });
 
-    console.log(state.activity);
+    console.log(props.value.activity);
   }
 
   //handleChangeHrs updates state of hrs on change
   function handleChangeHrs(event: any) {
-    setState({
-      activity: state.activity,
+    props.onChange({
+      activity: props.value.activity,
       hrs: event.target.value,
-      table: state.table,
+      table: props.value.table,
     });
 
-    console.log(state.hrs);
+    console.log(props.value.hrs);
   }
 
   //handleSubmit adds row entry to activity table
   function handleSubmit(event: any) {
     event.preventDefault();
-    console.log(state.activity);
+    console.log(props.value.activity + "counter:" + counter());
     if (!locked()) {
       lock();
-      let tempA = state.table;
+      let tempA = props.value.table;
       tempA.push({
         id: counter(),
-        hrs: Number.parseFloat(state.hrs),
-        activity: state.activity,
+        hrs: Number.parseFloat(props.value.hrs),
+        activity: props.value.activity,
       });
-      setState({ activity: "", hrs: "", table: tempA });
+      props.onChange({ activity: "", hrs: "", table: tempA });
       unlock();
     } else {
       alert("could not add activity row");
@@ -125,7 +146,6 @@ function ActivitiesTable() {
     if (nextField) {
       nextField.focus();
     }
-    // console.log(nextField);
   }
 
   function hrsOnEnter(event: any) {
@@ -146,7 +166,7 @@ function ActivitiesTable() {
 
   //renderTable returns a react node with table rows corresponding to the activitytable array elements.
   function renderTable() {
-    return state.table.map((item) => {
+    return props.value.table.map((item) => {
       return (
         <tr id={item.id.toString()}>
           <td>{item.hrs}</td>
@@ -178,7 +198,7 @@ function ActivitiesTable() {
                 <input
                   id="hours"
                   type="number"
-                  value={state.hrs}
+                  value={props.value.hrs}
                   onChange={handleChangeHrs}
                   onKeyDown={hrsOnEnter}
                 ></input>
@@ -187,7 +207,7 @@ function ActivitiesTable() {
                 <input
                   id="activity"
                   type="text"
-                  value={state.activity}
+                  value={props.value.activity}
                   onChange={handleChangeActivity}
                 ></input>
               </td>
