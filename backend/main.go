@@ -2,6 +2,7 @@
 package main
 
 import (
+	"database/sql"
 	_ "database/sql"
 	"encoding/json"
 	"fmt"
@@ -9,6 +10,11 @@ import (
 	"net/http"
 	_ "net/http"
 	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	_ "modernc.org/sqlite"
 	// _ "github.com/lib/pq"
 )
 
@@ -34,8 +40,40 @@ func (f *formContent) tableHasItem() bool {
 	}
 	return false
 }
+
+func DBAdd(json []byte) error {
+
+	return nil
+}
+
+func connectDB() (*sql.DB, error) {
+	return sql.Open("sqlite", "/home/daniel/Documents/hourLogger/hourLogger.db")
+}
+
+func getPage(con *sql.DB) {
+	r := con.QueryRow("select * from hours")
+	var first string
+	var second string
+	var third string
+	err := r.Scan(&first, &second, &third)
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Printf("r: %v %v %v \n", date, _, Summary)
+
+	split := strings.Split(first, " ")
+	month, err := strconv.Atoi(split[0])
+	day, err := strconv.Atoi(split[1])
+	year, err := strconv.Atoi(split[2])
+	time.Date(,time.Month(month))
+}
+
 func main() {
 
+	_, err := connectDB()
+	if err != nil {
+		log.Println("connectDB:" + err.Error())
+	}
 	conf, err := getConf()
 	if err != nil {
 		log.Printf("getConf: %s", err)
@@ -50,17 +88,19 @@ func main() {
 		}
 		form, err := getJason(body[:n])
 
-		if !form.tableHasItem() {
-			http.Error(resp, "table is empty", http.StatusExpectationFailed)
-			return
-		}
-
 		if err != nil {
 			str := fmt.Sprintf("/update/ handler: getJason: %s", err)
 			log.Println(str)
 			http.Error(resp, str, 404)
 			return
 		}
+		if !form.tableHasItem() {
+			http.Error(resp, "activity table is empty", http.StatusExpectationFailed)
+			return
+		}
+
+		err = DBAdd(body[:n])
+
 		resp.Write([]byte(fmt.Sprint(form)))
 		fmt.Println(form)
 	})
