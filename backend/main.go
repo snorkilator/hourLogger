@@ -10,9 +10,6 @@ import (
 	"net/http"
 	_ "net/http"
 	"os"
-	"strconv"
-	"strings"
-	"time"
 
 	_ "modernc.org/sqlite"
 	// _ "github.com/lib/pq"
@@ -59,13 +56,6 @@ func getPage(con *sql.DB) {
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Printf("r: %v %v %v \n", date, _, Summary)
-
-	split := strings.Split(first, " ")
-	month, err := strconv.Atoi(split[0])
-	day, err := strconv.Atoi(split[1])
-	year, err := strconv.Atoi(split[2])
-	time.Date(,time.Month(month))
 }
 
 func main() {
