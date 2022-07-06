@@ -11,6 +11,7 @@ import (
 	_ "net/http"
 	"os"
 
+	"github.com/pkg/errors"
 	_ "modernc.org/sqlite"
 	// _ "github.com/lib/pq"
 )
@@ -37,8 +38,24 @@ func (f *formContent) tableHasItem() bool {
 	}
 	return false
 }
+func (f *formContent) hasDate() bool {
+	if len(f.Date) > 0 {
+		return true
+	}
+	return false
+}
 
-func DBAdd(json []byte) error {
+func DBAdd(json []byte, date string) error {
+	querry, err := DB.Prepare("insert into hours (date, hours) values(?,?)")
+	defer querry.Close()
+	if err != nil {
+		return errors.Errorf("err prepare: %v", err)
+	}
+	result, err := querry.Exec(date, json)
+	if err != nil {
+		errors.Errorf("err exec: %v\n", err, err)
+	}
+	log.Printf("querry result: %v \n", result)
 
 	return nil
 }
@@ -58,9 +75,42 @@ func getPage(con *sql.DB) {
 	}
 }
 
-func main() {
+var update = func(resp http.ResponseWriter, req *http.Request) {
+	body := make([]byte, 2000)
+	n, err := req.Body.Read(body)
+	if err != nil && err.Error() != "EOF" {
+		log.Println("/update/ handler: " + err.Error())
+	}
+	form, err := getJason(body[:n])
 
-	_, err := connectDB()
+	if err != nil {
+		str := fmt.Sprintf("/update/ handler: getJason: %s", err)
+		log.Println(str)
+		http.Error(resp, str, 404)
+		return
+	}
+	if !form.hasDate() {
+		http.Error(resp, "No date specified for form, add date then submit again", http.StatusExpectationFailed)
+	}
+	if !form.tableHasItem() {
+		http.Error(resp, "activity table is empty", http.StatusExpectationFailed)
+		return
+	}
+	err = DBAdd(body[:n], form.Date)
+	if err != nil {
+		str := fmt.Sprintf("DBAdd: %v", err)
+		log.Println(str)
+		http.Error(resp, str, 500)
+	}
+	fmt.Printf("Date:%s Content: %v\n", form.Date, form)
+	resp.Write([]byte(fmt.Sprint(form)))
+}
+
+var DB *sql.DB
+
+func main() {
+	var err error
+	DB, err = connectDB()
 	if err != nil {
 		log.Println("connectDB:" + err.Error())
 	}
@@ -70,30 +120,7 @@ func main() {
 	}
 	fmt.Print(conf)
 
-	http.HandleFunc("/update/", func(resp http.ResponseWriter, req *http.Request) {
-		body := make([]byte, 2000)
-		n, err := req.Body.Read(body)
-		if err != nil && err.Error() != "EOF" {
-			log.Println("/update/ handler: " + err.Error())
-		}
-		form, err := getJason(body[:n])
-
-		if err != nil {
-			str := fmt.Sprintf("/update/ handler: getJason: %s", err)
-			log.Println(str)
-			http.Error(resp, str, 404)
-			return
-		}
-		if !form.tableHasItem() {
-			http.Error(resp, "activity table is empty", http.StatusExpectationFailed)
-			return
-		}
-
-		err = DBAdd(body[:n])
-
-		resp.Write([]byte(fmt.Sprint(form)))
-		fmt.Println(form)
-	})
+	http.HandleFunc("/update/", update)
 
 	fs := http.FileServer(http.Dir("../my-app/build"))
 	http.Handle("/", fs)
@@ -175,9 +202,9 @@ type State struct {
 	Activity string `json:"activity"`
 }
 type formContent struct {
-	Summary string `json:"summary"`
-	Goals   string `json:"goals"`
-	State   State  `json:"state"`
+	Goals string `json:"goals"`
+	State State  `json:"state"`
+	Date  string `json:"date"`
 }
 
 func getJason(raw []byte) (*formContent, error) {

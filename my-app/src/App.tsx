@@ -9,8 +9,8 @@ export default function App() {
     <div className="App">
       <h1>Hour Logger</h1>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="dayview" element={<DayView />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/" element={<DayView />} />
       </Routes>
     </div>
   );

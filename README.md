@@ -16,15 +16,19 @@ do send every certain amount of changes eventually
 find out how to send diffs eventually
 
 when date changes of day form
+    check if already exists:
+     exists:
+        send are you sure message than continue
+        else continue
     create new row with new date
-        success:
-            delete old row
-                success:
-                failure:
-                    show alert
-        failure:
-            show alert
-            set to 
+            success:
+                delete old row
+                    success:
+                    failure:
+                        show alert
+            failure:
+                show alert
+                set to 
 
 # old plan
 ## database datastruct:

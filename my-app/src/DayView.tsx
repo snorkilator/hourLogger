@@ -15,22 +15,24 @@ type state = {
   activity: string;
 };
 
-type pageData = { goals: string; summary: string; table: row[] };
+type pageData = { goals: string; table: row[]; Date: Date};
 export let DayView = () => {
   let row: row[] = [];
   const [goals, setGoals] = React.useState("");
-  const [summary, setSummary] = React.useState("");
+  // const [summary, setSummary] = React.useState("");
   const [table, setTable] = React.useState(row);
+  const [date, setDate] = React.useState(new Date())
   let rows: row[] = [];
   let [state, setState] = React.useState({
     table: rows,
     hrs: "",
     activity: "",
   });
+  
 
   let sendData = () => {
-    console.log("interval send: "+{ goals, summary, state });
-    let JSONStr = JSON.stringify({ goals, state });
+    console.log("interval send: " + { goals, state, date});
+    let JSONStr = JSON.stringify({ goals, state, date });
     let request = new XMLHttpRequest();
     request.open("put", "/update");
     request.addEventListener('load', event => { console.log("message received")})
@@ -42,10 +44,9 @@ export let DayView = () => {
   return (
     <>
       <main>
-        <h2>date</h2>
+        <h2>{date.toDateString()}</h2>
         <ActivitiesTable value={state} onChange={setState} />
         <Form formID="Goals" value={goals} setState={setGoals} />
-        <Form formID="Summary" value={summary} setState={setSummary} />
       </main>
       <nav>
         <Link to="/">Home</Link>
