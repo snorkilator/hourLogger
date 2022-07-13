@@ -3,7 +3,6 @@ package main
 
 import (
 	"database/sql"
-	_ "database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,9 +10,10 @@ import (
 	_ "net/http"
 	"os"
 
+	"html/template"
+
 	"github.com/pkg/errors"
 	_ "modernc.org/sqlite"
-	// _ "github.com/lib/pq"
 )
 
 // save page command comes in
@@ -23,6 +23,7 @@ validate that it fits the JSON object struct
 	it does: send query to save to database
 		if received confirmed, send happy message to client
 		if not received confirmed, send "could not save to client"
+
 */
 
 //starts server
@@ -46,24 +47,43 @@ func (f *formContent) hasDate() bool {
 }
 
 func DBAdd(json []byte, date string) error {
-	querry, err := DB.Prepare("insert into hours (date, hours) values(?,?)")
-	defer querry.Close()
+	query, err := DB.Prepare("insert into hours (date, hours) values(?,?)")
+	defer query.Close()
 	if err != nil {
 		return errors.Errorf("err prepare: %v", err)
 	}
-	result, err := querry.Exec(date, json)
+	result, err := query.Exec(date, json)
 	if err != nil {
 		errors.Errorf("err exec: %v\n", err, err)
 	}
-	log.Printf("querry result: %v \n", result)
+	fmt.Printf("querry result: %v \n", result)
 
 	return nil
+}
+
+func DBGetAll() ([][]byte, error) {
+	QResult, err := DB.Query("select * from hours")
+	if err != nil {
+		return nil, err
+	}
+	rows := make([][]byte, 0)
+	for QResult.Next() {
+		slc := []byte{}
+		err = QResult.Scan(&[]byte{}, &slc, &[]byte{})
+		rows = append(rows, slc)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return rows, nil
+
 }
 
 func connectDB() (*sql.DB, error) {
 	return sql.Open("sqlite", "/home/daniel/Documents/hourLogger/hourLogger.db")
 }
 
+//add page id as parameter and mdoify query string !!
 func getPage(con *sql.DB) {
 	r := con.QueryRow("select * from hours")
 	var first string
@@ -71,7 +91,7 @@ func getPage(con *sql.DB) {
 	var third string
 	err := r.Scan(&first, &second, &third)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 }
 
@@ -79,7 +99,7 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 	body := make([]byte, 2000)
 	n, err := req.Body.Read(body)
 	if err != nil && err.Error() != "EOF" {
-		log.Println("/update/ handler: " + err.Error())
+		fmt.Println("/update/ handler: " + err.Error())
 	}
 	form, err := getJason(body[:n])
 
@@ -99,31 +119,60 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 	err = DBAdd(body[:n], form.Date)
 	if err != nil {
 		str := fmt.Sprintf("DBAdd: %v", err)
-		log.Println(str)
+		fmt.Println(str)
 		http.Error(resp, str, 500)
 	}
-	fmt.Printf("Date:%s Content: %v\n", form.Date, form)
+	fmt.Printf("Date: %s Content: %v\n", form.Date, form)
 	resp.Write([]byte(fmt.Sprint(form)))
 }
 
 var DB *sql.DB
 
+func getAll(w http.ResponseWriter, r *http.Request) {
+	rows, err := DBGetAll()
+	if err != nil {
+		fmt.Println(err)
+	}
+	b := []byte("[")
+	for i, e := range rows {
+		b = append(b, e...)
+		if i < len(rows)-1 {
+			b = append(b, ',')
+		}
+	}
+	b = append(b, ']')
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(b)
+}
+
 func main() {
 	var err error
 	DB, err = connectDB()
 	if err != nil {
-		log.Println("connectDB:" + err.Error())
+		fmt.Println("connectDB:" + err.Error())
 	}
 	conf, err := getConf()
 	if err != nil {
-		log.Printf("getConf: %s", err)
+		fmt.Printf("getConf: %s", err)
 	}
 	fmt.Print(conf)
 
+	if err != nil {
+		fmt.Println(err)
+	}
 	http.HandleFunc("/update/", update)
+	http.HandleFunc("/getall", getAll)
 
 	fs := http.FileServer(http.Dir("../my-app/build"))
 	http.Handle("/", fs)
+	http.HandleFunc("/dayview", func(w http.ResponseWriter, r *http.Request) {
+		template.ParseFiles()
+		f, err := os.ReadFile("../my-app/build/index.html")
+		if err != nil {
+			fmt.Println(err)
+		}
+		w.Write(f)
+	})
 	fmt.Println(http.ListenAndServe(":"+conf.Database.Port, nil))
 
 	/*

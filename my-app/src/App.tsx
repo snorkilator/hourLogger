@@ -3,61 +3,36 @@ import { Routes, Route, Link } from "react-router-dom";
 import { isPropertySignature } from "typescript";
 import { DayView } from "./DayView";
 import "./App.css";
+import Home from "./Home"
+
+/*
+Receiving
+How does the transaction work?
+  initiate the request with get command
+  use page date as ID
+  send ID in url as page path
+    react router link on main page
+    link sends you to the page display
+      before page displays, do pull from database,
+        unwrap into object
+          populate state with object
+      Display page
+      if pull fails, display error message in alert box
+When do I want to get current state from server?
+- after, sending current state to server with good response
+  - do that on time intervols
+- Onload of page, receive current DB status
+- after a certain amount of changed to the website (nice to have, maybe not necessary) 
+*/
 
 export default function App() {
   return (
     <div className="App">
       <h1>Hour Logger</h1>
       <Routes>
-        <Route path="/home" element={<Home />} />
-        <Route path="/" element={<DayView />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/dayview" element={<DayView />} />
       </Routes>
-    </div>
-  );
-}
-
-function Counter(props: { count: any; increment: any }) {
-  return (
-    <div>
-      {props.count} <button onClick={props.increment}>increment</button>
-    </div>
-  );
-}
-
-function Dounter(props: { count: any; setCount: any }) {
-  return <SetToFour count={props.count} setCount={props.setCount} />;
-}
-
-let SetToFour = (props: { count: any; setCount: any }) => {
-  return (
-    <div>
-      {props.count} <button onClick={() => props.setCount(4)}>set to 4</button>
-    </div>
-  );
-};
-
-// App.js
-function Home() {
-  const [count, setCount] = React.useState("test");
-  let increment = () => {
-    setCount(count + 1);
-  };
-  let decrement = () => {
-    setCount(count + 1);
-  };
-  return (
-    <div>
-      <Counter count={count} increment={increment} />
-      <Dounter count={count} setCount={setCount} />
-
-      <main>
-        <h2>Welcome to the homepage!</h2>
-        <p>You can do this, I believe in you.</p>
-      </main>
-
-      <nav>
-        <Link to="/dayview">view day</Link>
-      </nav>
     </div>
   );
 }
