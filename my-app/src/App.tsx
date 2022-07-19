@@ -32,7 +32,8 @@ export default class App extends React.Component {
 state: { pages: [pageData] };
 constructor(props: any){
   super(props)
-  let p = [{ goals: "Loading Data...", table: [{}], Date: new Date() }] as never;
+  let date = new Date()
+  let p = [{table: [{id: 0, hrs: 0, activity: ""}], goals: "", date: new Date()}]as never;
   this.state = { pages: p };
 
   fetch("/getall").then((data) => {
@@ -47,7 +48,7 @@ constructor(props: any){
       <h1>Hour Logger</h1>
       <Routes>
         <Route path="/" element={<Home pages={this.state.pages} />} />
-        <Route path="/dayview" element={<DayView  />} />
+        <Route path="/dayview/" element={<DayView pages={this.state.pages} />} />
       </Routes>
     </div>
   );

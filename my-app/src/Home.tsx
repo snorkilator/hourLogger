@@ -1,5 +1,6 @@
 import * as React from "react";
 import pageData from "./DayView";
+import { Link } from "react-router-dom";
 
 export default function Home(props: {pages: [pageData]}) {
   const [count, setCount] = React.useState("test");
@@ -36,7 +37,7 @@ function Table(props:{pages: [pageData]}) {
             }
             return (
               <tr id={ID.toString()}>
-                <td>{page.goals}</td>
+                <td> <Link to={"/dayview/"+ new Date().toDateString()}>{page.goals}</Link></td>
                 <td>{tally}</td>
                 <td>{ID}</td>
               </tr>

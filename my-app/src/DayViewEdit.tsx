@@ -17,18 +17,14 @@ type state = {
 
 export type pageData = { goals: string; table: row[]; date: Date};
 export let DayView = (props: {pages: [pageData]}) => {
-  let placeholderpage = props.pages[0]
-  if (props.pages[0] == undefined){
-    props.pages = [{table: [{id: 0, hrs: 0, activity: ""}], goals: "", date: new Date()}]
-  }
   let row: row[] = [];
-  const [goals, setGoals] = React.useState(placeholderpage.goals);
+  const [goals, setGoals] = React.useState("");
   // const [summary, setSummary] = React.useState("");
-  const [table, setTable] = React.useState(placeholderpage.table);
-  const [date, setDate] = React.useState(placeholderpage.date)
+  const [table, setTable] = React.useState(row);
+  const [date, setDate] = React.useState(new Date())
   let rows: row[] = [];
-  let [rowEntry, setState] = React.useState({
-    table: placeholderpage.table,
+  let [state, setState] = React.useState({
+    table: rows,
     hrs: "",
     activity: "",
   });
@@ -37,7 +33,7 @@ export let DayView = (props: {pages: [pageData]}) => {
   let sendData = () => {
     // add error handling
     console.log("interval send: " + { goals, date});
-    let table = rowEntry.table
+    let table = state.table
     let JSONStr = JSON.stringify({goals, date, table});
     let request = new XMLHttpRequest();
     request.open("post", "/update/");
@@ -52,7 +48,7 @@ export let DayView = (props: {pages: [pageData]}) => {
     <>
       <main>
         <h2>{date.toDateString()}</h2>
-        <ActivitiesTable value={rowEntry} onChange={setState} />
+        <ActivitiesTable value={state} onChange={setState} />
         <Form formID="Goals" value={goals} setState={setGoals} />
       </main>
       <nav>
