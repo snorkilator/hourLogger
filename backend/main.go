@@ -34,7 +34,7 @@ type dbError interface {
 
 //checks that at least item is present of struct have content
 func (f *formContent) tableHasItem() bool {
-	if len(f.State.Table) > 0 {
+	if len(f.Table) > 0 {
 		return true
 	}
 	return false
@@ -106,6 +106,7 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		str := fmt.Sprintf("/update/ handler: getJason: %s", err)
 		log.Println(str)
+		fmt.Println(body[:n])
 		http.Error(resp, str, 404)
 		return
 	}
@@ -116,14 +117,19 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 		http.Error(resp, "activity table is empty", http.StatusExpectationFailed)
 		return
 	}
-	err = DBAdd(body[:n], form.Date)
-	if err != nil {
-		str := fmt.Sprintf("DBAdd: %v", err)
-		fmt.Println(str)
-		http.Error(resp, str, 500)
+	if req.Method == "POST" {
+		err = DBAdd(body[:n], form.Date)
+		if err != nil {
+			str := fmt.Sprintf("DBAdd: %v", err)
+			fmt.Println(str)
+			http.Error(resp, str, 500)
+		}
+		fmt.Printf("Date: %s Content: %v\n", form.Date, form)
+		resp.Write([]byte(fmt.Sprint(form)))
 	}
-	fmt.Printf("Date: %s Content: %v\n", form.Date, form)
-	resp.Write([]byte(fmt.Sprint(form)))
+	if req.Method == "PUT" {
+		// change existing message
+	}
 }
 
 var DB *sql.DB
@@ -133,15 +139,17 @@ func getAll(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	b := []byte("[")
+	b := []byte(`{"data": [`)
 	for i, e := range rows {
 		b = append(b, e...)
 		if i < len(rows)-1 {
 			b = append(b, ',')
 		}
 	}
-	b = append(b, ']')
+	b = append(b, ']', '}')
 	w.Header().Add("Content-Type", "application/json")
+	fmt.Printf("writing %s\n", b)
+	// b = []byte("test")
 	w.Write(b)
 }
 
@@ -171,6 +179,7 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
+		w.Header().Add("content-type", "text/html")
 		w.Write(f)
 	})
 	fmt.Println(http.ListenAndServe(":"+conf.Database.Port, nil))
@@ -245,14 +254,14 @@ type Row struct {
 	Activity string  `json:"activity"`
 }
 
-type State struct {
-	Table    []Row  `json:"table"`
-	Hrs      string `json:"hrs"`
-	Activity string `json:"activity"`
-}
+// type State struct {
+
+// 	Hrs      string `json:"hrs"`
+// 	Activity string `json:"activity"`
+// }
 type formContent struct {
 	Goals string `json:"goals"`
-	State State  `json:"state"`
+	Table []Row  `json:"table"`
 	Date  string `json:"date"`
 }
 

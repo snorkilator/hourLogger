@@ -4,7 +4,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import "./App.css";
 
-type row = {
+export type row = {
   id: number;
   hrs: number;
   activity: string;
@@ -15,7 +15,7 @@ type state = {
   activity: string;
 };
 
-type pageData = { goals: string; table: row[]; Date: Date};
+export type pageData = { goals: string; table: row[]; Date: Date};
 export let DayView = () => {
   let row: row[] = [];
   const [goals, setGoals] = React.useState("");
@@ -31,10 +31,13 @@ export let DayView = () => {
   
 
   let sendData = () => {
-    console.log("interval send: " + { goals, state, date});
-    let JSONStr = JSON.stringify({ goals, state, date });
+    // add error handling
+    console.log("interval send: " + { goals, date});
+    let table = state.table
+    let JSONStr = JSON.stringify({goals, date, table});
     let request = new XMLHttpRequest();
-    request.open("put", "/update");
+    request.open("post", "/update/");
+    request.setRequestHeader('Content-Type', 'application/json');
     request.addEventListener('load', event => { console.log("message received")})
     console.log(JSONStr)
     request.send(JSONStr);
@@ -244,3 +247,5 @@ let Form = (props: { formID: string; value: string; setState: any }) => {
     </div>
   );
 };
+
+export default pageData

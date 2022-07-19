@@ -4,6 +4,7 @@ import { isPropertySignature } from "typescript";
 import { DayView } from "./DayView";
 import "./App.css";
 import Home from "./Home"
+import pageData from "./DayView";
 
 /*
 Receiving
@@ -25,14 +26,30 @@ When do I want to get current state from server?
 - after a certain amount of changed to the website (nice to have, maybe not necessary) 
 */
 
-export default function App() {
+
+export default class App extends React.Component {
+
+state: { pages: [pageData] };
+constructor(props: any){
+  super(props)
+  let p = [{ goals: "Loading Data...", table: [{}], Date: new Date() }] as never;
+  this.state = { pages: p };
+
+  fetch("/getall").then((data) => {
+    data.json().then((data) => {
+      this.setState({ pages: data.data });
+    });
+  });
+}
+ render(){
   return (
     <div className="App">
       <h1>Hour Logger</h1>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/dayview" element={<DayView />} />
+        <Route path="/" element={<Home pages={this.state.pages} />} />
+        <Route path="/dayview" element={<DayView  />} />
       </Routes>
     </div>
   );
+ }
 }

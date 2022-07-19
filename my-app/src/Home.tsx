@@ -1,24 +1,48 @@
-import * as React from "react"
+import * as React from "react";
+import pageData from "./DayView";
 
+export default function Home(props: {pages: [pageData]}) {
+  const [count, setCount] = React.useState("test");
+  let increment = () => {
+    setCount(count + 1);
+  };
+  let decrement = () => {
+    setCount(count + 1);
+  };
+  return (
+    <div>
+      <main>
+        <Table pages={props.pages} />
+      </main>
+    </div>
+  );
+}
 
-// App.js
-export default function Home() {
-    const [count, setCount] = React.useState("test");
-    let increment = () => {
-      setCount(count + 1);
-    };
-    let decrement = () => {
-      setCount(count + 1);
-    };
+function Table(props:{pages: [pageData]}) {
     return (
-      <div>
-  
-        <main>
-          <h2>Welcome to the homepage!</h2>
-          <p>You can do this, I believe in you.</p>
-        </main>
-
-      </div>
+      <table>
+        <thead>
+          <td>Summary</td>
+          <td>Total HRS</td>
+          <td>row ID</td>
+        </thead>
+        <tbody>
+          {props.pages.map((page, ID, a) => {
+            let tally = 0;
+            if (page.table != undefined) {
+              for (let row of page.table) {
+                tally += row.hrs + 0;
+              }
+            }
+            return (
+              <tr id={ID.toString()}>
+                <td>{page.goals}</td>
+                <td>{tally}</td>
+                <td>{ID}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     );
-  }
-  
+}
