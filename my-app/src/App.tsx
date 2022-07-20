@@ -4,7 +4,7 @@ import { isPropertySignature } from "typescript";
 import { DayView } from "./DayView";
 import "./App.css";
 import Home from "./Home"
-import pageData from "./DayView";
+import {pageData} from "./DayView";
 
 /*
 Receiving
@@ -34,7 +34,7 @@ constructor(props: any){
   super(props)
   let date = new Date()
   let p = [{table: [{id: 0, hrs: 0, activity: ""}], goals: "", date: new Date()}]as never;
-  this.state = { pages: p };
+  this.state = { pages: p };  
 
   fetch("/getall").then((data) => {
     data.json().then((data) => {

@@ -1,5 +1,5 @@
 import * as React from "react";
-import pageData from "./DayView";
+import {pageData} from "./DayView";
 import { Link } from "react-router-dom";
 
 export default function Home(props: {pages: [pageData]}) {

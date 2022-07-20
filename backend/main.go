@@ -61,6 +61,22 @@ func DBAdd(json []byte, date string) error {
 	return nil
 }
 
+//TODO: change this to use alter keyword etc
+func DBUpdate(json []byte, date string) error {
+	query, err := DB.Prepare("insert into hours (date, hours) values(?,?)")
+	defer query.Close()
+	if err != nil {
+		return errors.Errorf("err prepare: %v", err)
+	}
+	result, err := query.Exec(date, json)
+	if err != nil {
+		errors.Errorf("err exec: %v\n", err, err)
+	}
+	fmt.Printf("querry result: %v \n", result)
+
+	return nil
+}
+
 func DBGetAll() ([][]byte, error) {
 	QResult, err := DB.Query("select * from hours")
 	if err != nil {
@@ -128,6 +144,7 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 		resp.Write([]byte(fmt.Sprint(form)))
 	}
 	if req.Method == "PUT" {
+
 		// change existing message
 	}
 }

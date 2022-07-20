@@ -4,7 +4,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import "./App.css";
 
-export type row = {
+type row = {
   id: number;
   hrs: number;
   activity: string;
@@ -19,6 +19,7 @@ export type pageData = { goals: string; table: row[]; date: Date};
 export let DayView = (props: {pages: [pageData]}) => {
   let placeholderpage = props.pages[0]
   if (props.pages[0] == undefined){
+    console.log("undefined")
     props.pages = [{table: [{id: 0, hrs: 0, activity: ""}], goals: "", date: new Date()}]
   }
   let row: row[] = [];
@@ -251,5 +252,3 @@ let Form = (props: { formID: string; value: string; setState: any }) => {
     </div>
   );
 };
-
-export default pageData
