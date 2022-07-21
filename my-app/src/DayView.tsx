@@ -14,35 +14,47 @@ type state = {
   hrs: string;
   activity: string;
 };
-let PageID = 0
-export type pageData = { goals: string; table: row[]; date: Date};
-export let DayView = (props: {pages: [pageData], setState: any}) => {
+let PageID = 0;
+export type pageData = { goals: string; table: row[]; date: Date };
+export let DayView = (props: { pages: [pageData]; setState: any }) => {
   //TODO: make Page ID dynamic
-  if (props.pages[0] == undefined){
-    console.log("undefined")
-    props.pages = [{table: [{id: 0, hrs: 0, activity: ""}], goals: "", date: new Date()}]
+  if (props.pages[0] == undefined) {
+    console.log("undefined");
+    props.pages = [
+      { table: [{ id: 0, hrs: 0, activity: "" }], goals: "", date: new Date() },
+    ];
   }
-  if (props.pages[0].goals != "flag"){
-    props.pages[0].goals = "flag"
-    props.setState({pages: props.pages})
+  if (props.pages[0].goals != "flag") {
+    props.pages[0].goals = "flag";
+    props.setState({ pages: props.pages });
   }
 
   let sendData = (newPage: boolean) => {
     // add error handling
-    console.log("interval send: " +  props.pages[PageID].date + props.pages[PageID].table[0].activity );
-    let table = props.pages[PageID].table
+    console.log(
+      "interval send: " +
+        props.pages[PageID].date +
+        props.pages[PageID].table[0].activity
+    );
+    let table = props.pages[PageID].table;
     let JSONStr = JSON.stringify(props.pages[PageID]);
     let request = new XMLHttpRequest();
+<<<<<<< HEAD
     request.open(newPage ? "post" : "put", "/update/");
+=======
+    request.open("post", "/update/");
+>>>>>>> 0c2081cb (pre-merge)
     request.setRequestHeader("Content-Type", "application/json");
     request.addEventListener("load", (event) => {
       console.log("message received");
     });
     console.log(JSONStr);
     request.send(JSONStr);
-
-
   };
+<<<<<<< HEAD
+=======
+  sendData();
+>>>>>>> 0c2081cb (pre-merge)
   return (
     <>
       <main>
@@ -60,8 +72,11 @@ export let DayView = (props: {pages: [pageData], setState: any}) => {
 
 let count: number = 0;
 function ActivitiesTable(props: { pages: [pageData]; setState: any }) {
-  let [tableEntry, setTableRow] = React.useState({hrs: NaN, activity: "enter activitiy"})
-  let tempPageID = 0
+  let [tableEntry, setTableRow] = React.useState({
+    hrs: NaN,
+    activity: "enter activitiy",
+  });
+  let tempPageID = 0;
   function counter(): number {
     count++;
     return count;
@@ -140,8 +155,8 @@ function ActivitiesTable(props: { pages: [pageData]; setState: any }) {
         hrs: tableEntry.hrs,
         activity: tableEntry.activity,
       });
-      let tempPages: [pageData] = props.pages
-      tempPages[PageID].table = tempTable
+      let tempPages: [pageData] = props.pages;
+      tempPages[PageID].table = tempTable;
       props.setState(tempPages);
       unlock();
     } else {
