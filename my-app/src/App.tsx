@@ -35,7 +35,7 @@ constructor(props: any){
   let date = new Date()
   let p = [{table: [{id: 0, hrs: 0, activity: ""}], goals: "", date: new Date()}]as never;
   this.state = { pages: p };  
-
+  this.setState = this.setState.bind(this)
   fetch("/getall").then((data) => {
     data.json().then((data) => {
       this.setState({ pages: data.data });
@@ -47,9 +47,10 @@ constructor(props: any){
   return (
     <div className="App">
       <h1>Hour Logger</h1>
+      {this.state.pages[0].goals}
       <Routes>
-        <Route path="/" element={<Home pages={this.state.pages} onChange={this.setState} />} />
-        <Route path="/dayview/" element={<DayView pages={this.state.pages} onChange={this.setState} />} />
+        <Route path="/" element={<Home pages={this.state.pages} setState={this.setState} />} />
+        <Route path="/dayview/" element={<DayView pages={this.state.pages} setState={this.setState} />} />
       </Routes>
     </div>
   );

@@ -2,7 +2,7 @@ import * as React from "react";
 import {pageData} from "./DayView";
 import { Link } from "react-router-dom";
 
-export default function Home(props: {pages: [pageData], onChange: any}) {
+export default function Home(props: {pages: [pageData], setState: any}) {
   const [count, setCount] = React.useState("test");
   let increment = () => {
     setCount(count + 1);
