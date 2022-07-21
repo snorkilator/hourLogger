@@ -2,7 +2,7 @@ import * as React from "react";
 import {pageData} from "./DayView";
 import { Link } from "react-router-dom";
 
-export default function Home(props: {pages: [pageData]}) {
+export default function Home(props: {pages: [pageData], onChange: any}) {
   const [count, setCount] = React.useState("test");
   let increment = () => {
     setCount(count + 1);
@@ -14,6 +14,8 @@ export default function Home(props: {pages: [pageData]}) {
     <div>
       <main>
         <Table pages={props.pages} />
+        <Link to="/dayview">dayview</Link>
+
       </main>
     </div>
   );

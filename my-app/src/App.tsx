@@ -41,16 +41,19 @@ constructor(props: any){
       this.setState({ pages: data.data });
     });
   });
+
 }
  render(){
   return (
     <div className="App">
       <h1>Hour Logger</h1>
       <Routes>
-        <Route path="/" element={<Home pages={this.state.pages} />} />
-        <Route path="/dayview/" element={<DayView pages={this.state.pages} />} />
+        <Route path="/" element={<Home pages={this.state.pages} onChange={this.setState} />} />
+        <Route path="/dayview/" element={<DayView pages={this.state.pages} onChange={this.setState} />} />
       </Routes>
     </div>
   );
+  
  }
+ 
 }

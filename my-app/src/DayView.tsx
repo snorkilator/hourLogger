@@ -1,5 +1,4 @@
 import { log } from "node:console";
-import { ReadableStreamBYOBRequest } from "node:stream/web";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import "./App.css";
@@ -15,46 +14,48 @@ type state = {
   activity: string;
 };
 
-export type pageData = { goals: string; table: row[]; date: Date};
-export let DayView = (props: {pages: [pageData]}) => {
-  let placeholderpage = props.pages[0]
-  if (props.pages[0] == undefined){
-    console.log("undefined")
-    props.pages = [{table: [{id: 0, hrs: 0, activity: ""}], goals: "", date: new Date()}]
+export type pageData = { goals: string; table: row[]; date: Date };
+export let DayView = (props: { pages: [pageData], onChange: any }) => {
+  let placeholderpage = props.pages[0];
+  if (props.pages[0] == undefined) {
+    console.log("undefined");
+    placeholderpage = [
+      { table: [{ id: 0, hrs: 0, activity: "" }], goals: "", date: new Date() },
+    ] as never;
   }
+  console.log("dayview state test:" + placeholderpage.table[0].activity);
   let row: row[] = [];
   const [goals, setGoals] = React.useState(placeholderpage.goals);
-  // const [summary, setSummary] = React.useState("");
-  const [table, setTable] = React.useState(placeholderpage.table);
-  const [date, setDate] = React.useState(placeholderpage.date)
+  const [date, setDate] = React.useState(placeholderpage.date);
   let rows: row[] = [];
   let [rowEntry, setState] = React.useState({
     table: placeholderpage.table,
     hrs: "",
     activity: "",
   });
-  
 
-  let sendData = () => {
+  let sendData = (newPage: boolean) => {
     // add error handling
-    console.log("interval send: " + { goals, date});
-    let table = rowEntry.table
-    let JSONStr = JSON.stringify({goals, date, table});
+    console.log("interval send: " + { goals, date });
+    let table = rowEntry.table;
+    let JSONStr = JSON.stringify({ goals, date, table });
     let request = new XMLHttpRequest();
-    request.open("post", "/update/");
-    request.setRequestHeader('Content-Type', 'application/json');
-    request.addEventListener('load', event => { console.log("message received")})
-    console.log(JSONStr)
+    request.open(newPage ? "post" : "put", "/update/");
+    request.setRequestHeader("Content-Type", "application/json");
+    request.addEventListener("load", (event) => {
+      console.log("message received");
+    });
+    console.log(JSONStr);
     request.send(JSONStr);
-
   };
-  sendData()
   return (
     <>
       <main>
         <h2>{date.toDateString()}</h2>
-        <ActivitiesTable value={rowEntry} onChange={setState} />
+        <ActivitiesTable value={rowEntry} temp={placeholderpage.table[0].activity} onChange={setState} />
         <Form formID="Goals" value={goals} setState={setGoals} />
+        <button onClick={() => sendData(true)}>POST</button>
+        <button onClick={() => sendData(false)}>PUT</button>
       </main>
       <nav>
         <Link to="/">Home</Link>
@@ -64,7 +65,7 @@ export let DayView = (props: {pages: [pageData]}) => {
 };
 
 let count: number = 0;
-function ActivitiesTable(props: { value: state; onChange: any }) {
+function ActivitiesTable(props: { value: state; onChange: any, temp: string }) {
   function counter(): number {
     count++;
     return count;
@@ -189,8 +190,10 @@ function ActivitiesTable(props: { value: state; onChange: any }) {
       );
     });
   }
+  console.log("ActivityTable rendering" + props.value.table[0].activity);
   return (
     <div>
+      <p>{props.temp}</p>
       <form onSubmit={handleSubmit}>
         <table className="activitiesTable">
           <thead>
@@ -239,6 +242,7 @@ let Form = (props: { formID: string; value: string; setState: any }) => {
 
   return (
     <div>
+      
       <form onSubmit={handleSubmit}>
         <label>{props.formID}</label>
         <br />
