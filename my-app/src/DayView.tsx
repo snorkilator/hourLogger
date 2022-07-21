@@ -43,7 +43,10 @@ export let DayView = (props: { pages: [pageData]; setState: any }) => {
     request.open(newPage ? "post" : "put", "/update/");
 =======
     request.open("post", "/update/");
+<<<<<<< HEAD
 >>>>>>> 0c2081cb (pre-merge)
+=======
+>>>>>>> 0c2081cb58f6c34c5d4caa4967e456c98eb4d896
     request.setRequestHeader("Content-Type", "application/json");
     request.addEventListener("load", (event) => {
       console.log("message received");
@@ -52,9 +55,13 @@ export let DayView = (props: { pages: [pageData]; setState: any }) => {
     request.send(JSONStr);
   };
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   sendData();
 >>>>>>> 0c2081cb (pre-merge)
+=======
+  sendData();
+>>>>>>> 0c2081cb58f6c34c5d4caa4967e456c98eb4d896
   return (
     <>
       <main>

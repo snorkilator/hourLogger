@@ -49,7 +49,7 @@ constructor(props: any){
       <h1>Hour Logger</h1>
       {this.state.pages[0].goals}
       <Routes>
-        <Route path="/" element={<Home pages={this.state.pages} setState={this.setState} />} />
+        <Route path="/" element={<Home pages={this.state.pages} setState={this.setState}  />} />
         <Route path="/dayview/" element={<DayView pages={this.state.pages} setState={this.setState} />} />
       </Routes>
     </div>
