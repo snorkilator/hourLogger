@@ -15,35 +15,35 @@ type state = {
   activity: string;
 };
 
-export type pageData = { goals: string; table: row[]; date: Date};
-export let DayView = (props: {pages: [pageData]}) => {
+export type pageData = { goals: string; table: row[]; date: Date };
+export let DayView = (props: { pages: [pageData] }) => {
   let row: row[] = [];
   const [goals, setGoals] = React.useState("");
   // const [summary, setSummary] = React.useState("");
   const [table, setTable] = React.useState(row);
-  const [date, setDate] = React.useState(new Date())
+  const [date, setDate] = React.useState(new Date());
   let rows: row[] = [];
   let [state, setState] = React.useState({
     table: rows,
     hrs: "",
     activity: "",
   });
-  
 
   let sendData = () => {
     // add error handling
-    console.log("interval send: " + { goals, date});
-    let table = state.table
-    let JSONStr = JSON.stringify({goals, date, table});
+    console.log("interval send: " + { goals, date });
+    let table = state.table;
+    let JSONStr = JSON.stringify({ goals, date, table });
     let request = new XMLHttpRequest();
     request.open("post", "/update/");
-    request.setRequestHeader('Content-Type', 'application/json');
-    request.addEventListener('load', event => { console.log("message received")})
-    console.log(JSONStr)
+    request.setRequestHeader("Content-Type", "application/json");
+    request.addEventListener("load", (event) => {
+      console.log("message received");
+    });
+    console.log(JSONStr);
     request.send(JSONStr);
-
   };
-  sendData()
+  sendData();
   return (
     <>
       <main>
@@ -248,4 +248,4 @@ let Form = (props: { formID: string; value: string; setState: any }) => {
   );
 };
 
-export default pageData
+export default pageData;
