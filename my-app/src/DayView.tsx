@@ -24,10 +24,6 @@ export let DayView = (props: { pages: [pageData]; setState: any }) => {
       { table: [{ id: 0, hrs: 0, activity: "" }], goals: "", date: new Date() },
     ];
   }
-  if (props.pages[0].goals != "flag") {
-    props.pages[0].goals = "flag";
-    props.setState({ pages: props.pages });
-  }
 
   let sendData = (newPage: boolean) => {
     // add error handling
@@ -39,14 +35,7 @@ export let DayView = (props: { pages: [pageData]; setState: any }) => {
     let table = props.pages[PageID].table;
     let JSONStr = JSON.stringify(props.pages[PageID]);
     let request = new XMLHttpRequest();
-<<<<<<< HEAD
     request.open(newPage ? "post" : "put", "/update/");
-=======
-    request.open("post", "/update/");
-<<<<<<< HEAD
->>>>>>> 0c2081cb (pre-merge)
-=======
->>>>>>> 0c2081cb58f6c34c5d4caa4967e456c98eb4d896
     request.setRequestHeader("Content-Type", "application/json");
     request.addEventListener("load", (event) => {
       console.log("message received");
@@ -54,21 +43,14 @@ export let DayView = (props: { pages: [pageData]; setState: any }) => {
     console.log(JSONStr);
     request.send(JSONStr);
   };
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  sendData();
->>>>>>> 0c2081cb (pre-merge)
-=======
-  sendData();
->>>>>>> 0c2081cb58f6c34c5d4caa4967e456c98eb4d896
+  sendData(true)
   return (
     <>
       <main>
         {props.pages[0].goals}
-        {/* <h2>{props.pages[placeHolderPageID].date.toDateString()}</h2> */}
+        {/* <h2>{props.pages[PageID].date.toDateString()}</h2> */}
         <ActivitiesTable pages={props.pages} setState={props.setState} />
-        {/* <Form formID="Goals" value={goals} setState={setGoals} /> */}
+        <Form formID="Goals" value={props.pages[PageID].goals} setState={props.setState} />
       </main>
       <nav>
         <Link to="/">Home</Link>
