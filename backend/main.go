@@ -28,6 +28,8 @@ validate that it fits the JSON object struct
 
 //starts server
 
+var NO_ROWS_WRITTEN = errors.New("No rows written")
+
 type dbError interface {
 	Error() string
 }
@@ -53,10 +55,14 @@ func DBAdd(json []byte, date string) error {
 		return errors.Errorf("err prepare: %v", err)
 	}
 	result, err := query.Exec(date, json)
+	fmt.Printf("querry result: %v \n", result)
+
 	if err != nil {
 		errors.Errorf("err exec: %v\n", err, err)
 	}
-	fmt.Printf("querry result: %v \n", result)
+	if result == nil {
+		return NO_ROWS_WRITTEN
+	}
 
 	return nil
 }
@@ -136,12 +142,18 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 	if req.Method == "POST" {
 		err = DBAdd(body[:n], form.Date)
 		if err != nil {
+			if err == NO_ROWS_WRITTEN {
+				http.Error(resp, "entry already exists", http.StatusConflict)
+				return
+			}
 			str := fmt.Sprintf("DBAdd: %v", err)
 			fmt.Println(str)
 			http.Error(resp, str, 500)
+			return
 		}
 		fmt.Printf("Date: %s Content: %v\n", form.Date, form)
 		resp.Write([]byte(fmt.Sprint(form)))
+		return
 	}
 	if req.Method == "PUT" {
 		err = DBUpdate(body[:n], form.Date)
@@ -149,6 +161,7 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 			str := fmt.Sprintf("DBUpdate: %v", err)
 			fmt.Println(str)
 			http.Error(resp, str, 500)
+			return
 		}
 		fmt.Printf("Update:: Date: %s Content: %v\n", form.Date, form)
 		resp.Write([]byte(fmt.Sprint(form)))
@@ -197,7 +210,7 @@ func main() {
 
 	fs := http.FileServer(http.Dir("../my-app/build"))
 	http.Handle("/", fs)
-	http.HandleFunc("/dayview", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/dayview/", func(w http.ResponseWriter, r *http.Request) {
 		template.ParseFiles()
 		f, err := os.ReadFile("../my-app/build/index.html")
 		if err != nil {
@@ -274,7 +287,7 @@ func getConf() (config, error) {
 
 type Row struct {
 	Id       int     `json:"id"`
-	Hrs      float32 `json:"hrs"`
+	Hrs      float64 `json:"hrs"`
 	Activity string  `json:"activity"`
 }
 

@@ -1,8 +1,9 @@
-import * as React from "react";
+import React from "react";
 import {pageData} from "./DayView";
 import { Link } from "react-router-dom";
+import { setConstantValue } from "typescript";
 
-export default function Home(props: {pages: [pageData], setState: any}) {
+export default function Home(props: {pages: [pageData], setState: any, getAll: VoidFunction}) {
   const [count, setCount] = React.useState("test");
   let increment = () => {
     setCount(count + 1);
@@ -10,11 +11,12 @@ export default function Home(props: {pages: [pageData], setState: any}) {
   let decrement = () => {
     setCount(count + 1);
   };
+  React.useEffect(() => props.getAll(), [])
   return (
     <div>
       <main>
         <Table pages={props.pages} />
-        <Link to="/dayview">dayview</Link>
+        <Link to="/dayview/new">New Page</Link>
 
       </main>
     </div>
@@ -22,6 +24,7 @@ export default function Home(props: {pages: [pageData], setState: any}) {
 }
 
 function Table(props:{pages: [pageData]}) {
+  if (props.pages == null) return <div id="noData">no data</div>
     return (
       <table>
         <thead>
@@ -39,7 +42,7 @@ function Table(props:{pages: [pageData]}) {
             }
             return (
               <tr id={ID.toString()}>
-                <td> <Link to={"/dayview/"+ new Date().toDateString()}>{page.goals}</Link></td>
+                <td> <Link to={"/dayview/"+ page.date}>{page.date}</Link></td>
                 <td>{tally}</td>
                 <td>{ID}</td>
               </tr>
