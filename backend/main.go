@@ -69,12 +69,15 @@ func DBAdd(json []byte, date string) error {
 
 //TODO: change this to use alter keyword etc
 func DBUpdate(json []byte, date string) error {
-	query, err := DB.Prepare("UPDATE hours SET date = ?, hours = ?")
+	fmt.Printf("DBUpdate: ")
+
+	// query, err := DB.Prepare("UPDATE hours SET date = ?, hours = ?")
+	query, err := DB.Prepare("UPDATE hours SET date = ?, hours = ? WHERE date = ?")
 	defer query.Close()
 	if err != nil {
-		return errors.Errorf("err prepare: %v", err)
+		return errors.Errorf("err prepare: %v\n", err)
 	}
-	result, err := query.Exec(date, json)
+	result, err := query.Exec(date, json, date)
 	if err != nil {
 		errors.Errorf("err exec: %v\n", err, err)
 	}
@@ -158,12 +161,14 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 	if req.Method == "PUT" {
 		err = DBUpdate(body[:n], form.Date)
 		if err != nil {
-			str := fmt.Sprintf("DBUpdate: %v", err)
+			str := fmt.Sprintf("DBUpdate: %v\n", err)
 			fmt.Println(str)
 			http.Error(resp, str, 500)
 			return
 		}
 		fmt.Printf("Update:: Date: %s Content: %v\n", form.Date, form)
+		fmt.Printf("Update:: Date: %s RawData: %s\n", form.Date, body[:n])
+
 		resp.Write([]byte(fmt.Sprint(form)))
 		// change existing message
 	}
@@ -185,7 +190,7 @@ func getAll(w http.ResponseWriter, r *http.Request) {
 	}
 	b = append(b, ']', '}')
 	w.Header().Add("Content-Type", "application/json")
-	fmt.Printf("writing %s\n", b)
+	fmt.Printf("getAll: response: %s\n", b)
 	// b = []byte("test")
 	w.Write(b)
 }
