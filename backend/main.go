@@ -49,12 +49,12 @@ func (f *formContent) hasDate() bool {
 }
 
 func DBAdd(json []byte, date string) error {
-	query, err := DB.Prepare("insert into hours (date, hours) values(?,?)")
+	query, err := DB.Prepare("INSERT INTO HOURS (date, hours) VALUES(?,?)")
 	defer query.Close()
 	if err != nil {
 		return errors.Errorf("err prepare: %v", err)
 	}
-	result, err := query.Exec(date, json)
+	result, err := query.Exec(date, json, date)
 	fmt.Printf("querry result: %v \n", result)
 
 	if err != nil {
