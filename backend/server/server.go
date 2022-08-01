@@ -20,7 +20,7 @@ import (
 var noRowsWritten = errors.New("No rows written")
 
 //table HasItem checks that at least item is present of struct have content
-func (f *formContent) tableHasItem() bool {
+func (f *formContent) hasElement() bool {
 	if len(f.Table) > 0 {
 		return true
 	}
@@ -35,8 +35,8 @@ func (f *formContent) hasDate() bool {
 	return false
 }
 
-//dbAdd inserts row into hours table with the given json stored in hours row and date stored in date row
-func dbAdd(json []byte, date string) error {
+//add inserts row into hours table with the given json stored in hours row and date stored in date row
+func add(json []byte, date string) error {
 	query, err := db.Prepare("INSERT INTO HOURS (date, hours) VALUES(?,?)")
 	defer query.Close()
 	if err != nil {
@@ -55,8 +55,8 @@ func dbAdd(json []byte, date string) error {
 	return nil
 }
 
-// dbUpdate updates row in DB with given date string and json data
-func dbUpdate(json []byte, date string) error {
+// update updates row in DB with given date string and json data
+func update(json []byte, date string) error {
 	fmt.Printf("DBUpdate: ")
 	query, err := db.Prepare("UPDATE hours SET date = ?, hours = ? WHERE date = ?")
 	defer query.Close()
@@ -72,8 +72,8 @@ func dbUpdate(json []byte, date string) error {
 	return nil
 }
 
-// dbGetAll queries database for all rows in hours table and returns rows as array. Returns error and nil array if error
-func dbGetAll() ([][]byte, error) {
+// getAll queries database for all rows in hours table and returns rows as array. Returns error and nil array if error
+func getAll() ([][]byte, error) {
 	QResult, err := db.Query("select * from hours")
 	if err != nil {
 		return nil, err
@@ -88,11 +88,15 @@ func dbGetAll() ([][]byte, error) {
 		}
 	}
 	return rows, nil
+}
+
+//delete deletes row specified by date param
+func delete(date string) {
 
 }
 
-//update handles updates to the hours table. It received PUT and POST requests. The former updates a row and the latter inserts a row
-var update = func(resp http.ResponseWriter, req *http.Request) {
+//handleUpdate handles updates to the hours table. It received PUT and POST requests. The former updates a row and the latter inserts a row
+var handleUpdate = func(resp http.ResponseWriter, req *http.Request) {
 	body := make([]byte, 2000)
 	n, err := req.Body.Read(body)
 	if err != nil && err.Error() != "EOF" {
@@ -112,11 +116,11 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.Method == "POST" {
-		if !form.tableHasItem() {
+		if !form.hasElement() {
 			http.Error(resp, "activity table is empty", http.StatusExpectationFailed)
 			return
 		}
-		err = dbAdd(body[:n], form.Date)
+		err = add(body[:n], form.Date)
 		if err != nil {
 			if err == noRowsWritten {
 				http.Error(resp, "entry already exists", http.StatusConflict)
@@ -132,7 +136,7 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if req.Method == "PUT" {
-		err = dbUpdate(body[:n], form.Date)
+		err = update(body[:n], form.Date)
 		if err != nil {
 			str := fmt.Sprintf("DBUpdate: %v\n", err)
 			fmt.Println(str)
@@ -150,9 +154,9 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 //db holds sqlite3 database connection
 var db *sql.DB
 
-//getAll sends all rows from hours table as json array
-func getAll(w http.ResponseWriter, r *http.Request) {
-	rows, err := dbGetAll()
+//serveAll sends all rows from hours table as json array
+func serveAll(w http.ResponseWriter, r *http.Request) {
+	rows, err := getAll()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -188,8 +192,8 @@ func StartServer() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	http.HandleFunc("/update/", update)
-	http.HandleFunc("/getall", getAll)
+	http.HandleFunc("/update/", handleUpdate)
+	http.HandleFunc("/getall", serveAll)
 
 	fs := http.FileServer(http.Dir("../my-app/build"))
 	http.Handle("/", fs)
