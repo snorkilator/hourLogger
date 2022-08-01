@@ -16,18 +16,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-// save page command comes in
-/*
-validate that it fits the JSON object struct
-	if it doesn't: send failed to save error ** need error type for api
-	it does: send query to save to database
-		if received confirmed, send happy message to client
-		if not received confirmed, send "could not save to client"
-
-*/
-
-//starts server
-
 var NO_ROWS_WRITTEN = errors.New("No rows written")
 
 type dbError interface {
@@ -41,6 +29,8 @@ func (f *formContent) tableHasItem() bool {
 	}
 	return false
 }
+
+//hasDate checks if date field is empty and returns true or false
 func (f *formContent) hasDate() bool {
 	if len(f.Date) > 0 {
 		return true
@@ -48,6 +38,7 @@ func (f *formContent) hasDate() bool {
 	return false
 }
 
+//DBAdd inserts row into hours table with the given json stored in hours row and date stored in date row
 func DBAdd(json []byte, date string) error {
 	query, err := DB.Prepare("INSERT INTO HOURS (date, hours) VALUES(?,?)")
 	defer query.Close()
@@ -67,11 +58,9 @@ func DBAdd(json []byte, date string) error {
 	return nil
 }
 
-//TODO: change this to use alter keyword etc
+// DBUpdate updates row in DB with given date string and json data
 func DBUpdate(json []byte, date string) error {
 	fmt.Printf("DBUpdate: ")
-
-	// query, err := DB.Prepare("UPDATE hours SET date = ?, hours = ?")
 	query, err := DB.Prepare("UPDATE hours SET date = ?, hours = ? WHERE date = ?")
 	defer query.Close()
 	if err != nil {
@@ -86,6 +75,7 @@ func DBUpdate(json []byte, date string) error {
 	return nil
 }
 
+// DBGetAll queries database for all rows in hours table and returns rows as array. Returns error and nil array if error
 func DBGetAll() ([][]byte, error) {
 	QResult, err := DB.Query("select * from hours")
 	if err != nil {
@@ -104,29 +94,14 @@ func DBGetAll() ([][]byte, error) {
 
 }
 
-func connectDB() (*sql.DB, error) {
-	return sql.Open("sqlite", "/home/daniel/Documents/hourLogger/hourLogger.db")
-}
-
-//add page id as parameter and mdoify query string !!
-func getPage(con *sql.DB) {
-	r := con.QueryRow("select * from hours")
-	var first string
-	var second string
-	var third string
-	err := r.Scan(&first, &second, &third)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
+//update handles updates to the hours table. It received PUT and POST requests. The former updates a row and the latter inserts a row
 var update = func(resp http.ResponseWriter, req *http.Request) {
 	body := make([]byte, 2000)
 	n, err := req.Body.Read(body)
 	if err != nil && err.Error() != "EOF" {
 		fmt.Println("/update/ handler: " + err.Error())
 	}
-	form, err := getJason(body[:n])
+	form, err := parseJSON(body[:n])
 
 	if err != nil {
 		str := fmt.Sprintf("/update/ handler: getJason: %s", err)
@@ -138,11 +113,12 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 	if !form.hasDate() {
 		http.Error(resp, "No date specified for form, add date then submit again", http.StatusExpectationFailed)
 	}
-	if !form.tableHasItem() {
-		http.Error(resp, "activity table is empty", http.StatusExpectationFailed)
-		return
-	}
+
 	if req.Method == "POST" {
+		if !form.tableHasItem() {
+			http.Error(resp, "activity table is empty", http.StatusExpectationFailed)
+			return
+		}
 		err = DBAdd(body[:n], form.Date)
 		if err != nil {
 			if err == NO_ROWS_WRITTEN {
@@ -176,6 +152,7 @@ var update = func(resp http.ResponseWriter, req *http.Request) {
 
 var DB *sql.DB
 
+//getAll sends all rows from hours table as json array
 func getAll(w http.ResponseWriter, r *http.Request) {
 	rows, err := DBGetAll()
 	if err != nil {
@@ -197,7 +174,7 @@ func getAll(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var err error
-	DB, err = connectDB()
+	DB, err = sql.Open("sqlite", "/home/daniel/Documents/hourLogger/hourLogger.db")
 	if err != nil {
 		fmt.Println("connectDB:" + err.Error())
 	}
@@ -269,6 +246,7 @@ func main() {
 	*/
 }
 
+//config is used to contain and thus access config.json data
 type config struct {
 	Database struct {
 		Ip       string `json:"ip"`
@@ -278,6 +256,7 @@ type config struct {
 	} `json:"database"`
 }
 
+//getConf reads config json file stored at current directory and resturns
 func getConf() (config, error) {
 	var conf = new(config)
 	f, err := os.ReadFile("./config.json")
@@ -290,24 +269,22 @@ func getConf() (config, error) {
 	return *conf, nil
 }
 
+//Row is used in formContent struct
 type Row struct {
 	Id       int     `json:"id"`
 	Hrs      float64 `json:"hrs"`
 	Activity string  `json:"activity"`
 }
 
-// type State struct {
-
-// 	Hrs      string `json:"hrs"`
-// 	Activity string `json:"activity"`
-// }
+//formContent is used to ingest json object and check certain properties after ingested
 type formContent struct {
 	Goals string `json:"goals"`
 	Table []Row  `json:"table"`
 	Date  string `json:"date"`
 }
 
-func getJason(raw []byte) (*formContent, error) {
+//parseJSON parses raw bytes as pre-defined struct object
+func parseJSON(raw []byte) (*formContent, error) {
 	var form = new(formContent)
 	err := json.Unmarshal(raw, &form)
 	return form, err

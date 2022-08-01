@@ -105,7 +105,6 @@ function ActivitiesTable(props: {
     hrs: NaN,
     activity: "enter activitiy",
   });
-  let tempPageID = 0;
   function counter(): number {
     count++;
     return count;
@@ -130,8 +129,8 @@ function ActivitiesTable(props: {
 
   function sumHrs(): number {
     let count = 0;
-    for (let i = 0; i < props.pages[tempPageID].table.length; i++) {
-      let row = props.pages[tempPageID].table[i].hrs;
+    for (let i = 0; i < props.pages[PageID].table.length; i++) {
+      let row = props.pages[PageID].table[i].hrs;
       if (row) {
         console.log(row);
         count += row;
@@ -140,20 +139,20 @@ function ActivitiesTable(props: {
     return count;
   }
   //deleterow deletes row from activity
-  function deleteRow(event: any, id: number) {
+  function deleteRow(id: number) {
     console.log("delete row:" + "Id: " + id.toString());
-    let tempA = props.pages[tempPageID].table;
+    let tempA = props.pages[PageID].table;
     for (let i = 0; i < tempA.length; i++) {
       if (tempA[i].id === id) {
         console.log(i);
         tempA.splice(i, 1);
         let pages = props.pages;
-        pages[tempPageID].table = tempA;
+        pages[PageID].table = tempA;
         props.setState({ pages });
       }
     }
     console.log("DeleteRow:");
-    console.log(props.pages[tempPageID].table);
+    console.log(props.pages[PageID].table);
     props.sendData();
   }
   //handleChangeActivity updates state of activity on change
@@ -236,7 +235,7 @@ function ActivitiesTable(props: {
             <td>
               <button
                 type="button"
-                onClick={(event) => deleteRow(event, item.id)}
+                onClick={() => deleteRow(item.id)}
               >
                 X
               </button>

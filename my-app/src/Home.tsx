@@ -40,13 +40,15 @@ function Table(props:{pages: [pageData]}) {
                 tally += row.hrs + 0;
               }
             }
+            if (page.table.length !== 0){
             return (
-              <tr id={ID.toString()}>
+              <tr id={page.date}>
                 <td> <Link to={"/dayview/"+ page.date}>{page.date}</Link></td>
                 <td>{tally}</td>
-                <td>{ID}</td>
+                <td>{page.date}</td>
               </tr>
             );
+            }
           })}
         </tbody>
       </table>

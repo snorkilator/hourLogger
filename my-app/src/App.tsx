@@ -30,6 +30,8 @@ export type state = { pages: [pageData] };
 export default class App extends React.Component {
   state: state;
   getAll = () => {
+    //Dev Flag for console
+    let printConsole = false;
     fetch("/getall")
       .then(
         (data) => data.json(),
@@ -39,11 +41,15 @@ export default class App extends React.Component {
       .then((data: { data: [pageData] }) => {
         if (data.data[0]) {
           this.setState({ pages: data.data });
-          console.log("writing from fetch to state");
-          console.log(data.data);
+          if (printConsole) {
+            console.log("writing from fetch to state");
+            console.log(data.data);
+          }
         }
-        console.log("updated state from fetch:");
-        this.setState((state) => console.log(state));
+        if (printConsole) {
+          console.log("updated state from fetch:");
+          this.setState((state) => console.log(state));
+        }
       });
   };
   constructor(props: any) {
@@ -54,14 +60,14 @@ export default class App extends React.Component {
     this.state = { pages: p };
     this.setState = this.setState.bind(this);
     this.getAll = this.getAll.bind(this);
-    this.interval = null as unknown as NodeJS.Timer
+    this.interval = null as unknown as NodeJS.Timer;
   }
-  interval: NodeJS.Timer
-  componentDidMount(){
+  interval: NodeJS.Timer;
+  componentDidMount() {
     this.interval = setInterval(() => this.getAll(), 5000);
   }
-  componentWillUnmount(){
-    clearInterval(this.interval)
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
   render() {
     return (
