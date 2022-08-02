@@ -12,9 +12,9 @@ type row = {
   activity: string;
 };
 let PageID = 0;
+let newPage = false;
 export type pageData = { goals: string; table: row[]; date: string };
 export let DayView = (props: { state: state; setState: any }) => {
-  let newPage = false;
   // console.log(document.baseURI);
   let params = useParams();
   if (params.date && params.date != "new") {
@@ -34,27 +34,7 @@ export let DayView = (props: { state: state; setState: any }) => {
     ];
     newPage = true;
   }
-  let sendData = () => {
-    if (props.state.pages[PageID]) {
-      // add error handlingprops.pages[PageID].table[1].activity
-      console.log("interval send: " + props.state.pages[PageID].date);
-      let table = props.state.pages[PageID].table;
-      let JSONStr = JSON.stringify(props.state.pages[PageID]);
-      let request = new XMLHttpRequest();
-      request.open(newPage ? "post" : "put", "/update/");
-      request.setRequestHeader("Content-Type", "application/json");
-      request.addEventListener("load", (event) => {
-        console.log("XHR Status code: ", request.status);
-        if (request.status === 409) {
-          alert("The page you are trying to create already exists");
-        }
-      });
-      console.log("SENDDATA:");
-      console.log(newPage ? "post" : "put");
-      console.log(JSONStr);
-      request.send(JSONStr);
-    }
-  };
+
 
   // console.log("Rendering DayView with: ");
   // console.log(props.state.pages);
@@ -167,23 +147,7 @@ function ActivitiesTable(props: {
     }
     return count;
   }
-  //deleterow deletes row from activity
-  function deleteRow(id: number) {
-    console.log("delete row:" + "Id: " + id.toString());
-    let tempA = props.state.pages[PageID].table;
-    for (let i = 0; i < tempA.length; i++) {
-      if (tempA[i].id === id) {
-        console.log(i);
-        tempA.splice(i, 1);
-        let pages = props.state.pages;
-        pages[PageID].table = tempA;
-        props.setState({ pages });
-      }
-    }
-    console.log("DeleteRow:");
-    console.log(props.state.pages[PageID].table);
-    props.sendData();
-  }
+  
   //handleChangeActivity updates state of activity on change
   function handleChangeActivity(event: any) {
     setTableRow({
@@ -226,7 +190,7 @@ function ActivitiesTable(props: {
             <td>description</td>
           </thead>
           <tbody>
-            <TableMap state={props.state} />
+            <TableMap state={props.state} setState={props.setState}/>
             <tr>
               <td>
                 <input
@@ -259,8 +223,48 @@ function ActivitiesTable(props: {
   );
 }
 
+function sendData(state: state) {
+  if (state.pages[PageID]) {
+    // add error handlingprops.pages[PageID].table[1].activity
+    console.log("interval send: " + state.pages[PageID].date);
+    let table = state.pages[PageID].table;
+    let JSONStr = JSON.stringify(state.pages[PageID]);
+    let request = new XMLHttpRequest();
+    request.open(newPage ? "post" : "put", "/update/");
+    request.setRequestHeader("Content-Type", "application/json");
+    request.addEventListener("load", (event) => {
+      console.log("XHR Status code: ", request.status);
+      if (request.status === 409) {
+        alert("The page you are trying to create already exists");
+      }
+    });
+    console.log("SENDDATA:");
+    console.log(newPage ? "post" : "put");
+    console.log(JSONStr);
+    request.send(JSONStr);
+  }
+};
+
+//deleterow deletes row from activity
+function deleteRow(id: number, state: state, setState: any) {
+  console.log("delete row:" + "Id: " + id.toString());
+  let tempA = state.pages[PageID].table;
+  for (let i = 0; i < tempA.length; i++) {
+    if (tempA[i].id === id) {
+      console.log(i);
+      tempA.splice(i, 1);
+      let pages = state.pages;
+      pages[PageID].table = tempA;
+      setState({ pages });
+    }
+  }
+  console.log("DeleteRow:");
+  console.log(state.pages[PageID].table);
+  sendData(state);
+}
+
 //renderTable returns a react node with table rows corresponding to the activitytable array elements.
-let TableMap = (props: { state: state }) => {
+let TableMap = (props: { state: state, setState:any }) => {
   let rows = props.state.pages[PageID].table.map((item) => {
     console.log(
       "DayView: renderTable: updating table with row" + item.id + item.activity
@@ -273,7 +277,7 @@ let TableMap = (props: { state: state }) => {
           <td>
             <button
               type="button"
-              // onClick={() => deleteRow(item.id)}
+              onClick={() => deleteRow(item.id, props.state, props.setState)}
             >
               X
             </button>
