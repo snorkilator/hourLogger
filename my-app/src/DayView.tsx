@@ -15,7 +15,7 @@ let PageID = 0;
 export type pageData = { goals: string; table: row[]; date: string };
 export let DayView = (props: { state: state; setState: any }) => {
   let newPage = false;
-  console.log(document.baseURI);
+  // console.log(document.baseURI);
   let params = useParams();
   if (params.date && params.date != "new") {
     console.log("saw date param:");
@@ -28,7 +28,7 @@ export let DayView = (props: { state: state; setState: any }) => {
     });
   }
   if (params.date == "new") {
-    console.log("DayView: newPage");
+    // console.log("DayView: newPage");
     props.state.pages = [
       { table: [], goals: "", date: new Date().toDateString() },
     ];
@@ -56,23 +56,14 @@ export let DayView = (props: { state: state; setState: any }) => {
     }
   };
 
-  // React.useEffect(() => {
-  //   let i = setInterval(() => sendData(), 5000);
-  //   console.log("Dayview mounted")
-  //   return () => {
-  //     clearInterval(i);
-  //     console.log("Dayview unmounted")
-  //   };
-  // }, []);
-
-  console.log("Rendering DayView with: ");
-  console.log(props.state.pages);
+  // console.log("Rendering DayView with: ");
+  // console.log(props.state.pages);
 
   let main = props.state.pages ? (
     <main>
       <h2>{props.state.pages[PageID].date}</h2>
       <ActivitiesTable
-        pages={props.state.pages}
+        state={props.state}
         setState={props.setState}
         sendData={sendData}
       />
@@ -97,7 +88,7 @@ export let DayView = (props: { state: state; setState: any }) => {
 
 let count: number = 0;
 function ActivitiesTable(props: {
-  pages: [pageData];
+  state: state;
   setState: any;
   sendData: any;
 }) {
@@ -108,6 +99,44 @@ function ActivitiesTable(props: {
   function counter(): number {
     count++;
     return count;
+  }
+  //handleSubmit adds row entry to activity table
+  function handleSubmit(event: any) {
+    event.preventDefault();
+    // console.log(props.pages[PageID].activity + "counter:" + counter());
+    if (!locked()) {
+      lock();
+      let tempTable = props.state.pages[PageID].table;
+      console.log("adding row: " + tableEntry.hrs);
+      tempTable.push({
+        id: counter(),
+        hrs: tableEntry.hrs,
+        activity: tableEntry.activity,
+      });
+
+      let tempPages = props.state.pages;
+      tempPages[PageID].table = tempTable;
+      props.setState(tempPages);
+      setTableRow({
+        hrs: NaN,
+        activity: "enter activitiy",
+      });
+      console.log("adding row: " + props.state.pages[PageID].table[0].hrs);
+      props.sendData();
+      unlock();
+    } else {
+      alert("could not add activity row");
+    }
+    let nextField = document.getElementById("hours");
+    if (nextField) {
+      nextField.focus();
+    }
+
+    props.setState((value: state) => {
+      // console.log("after Adding row:");
+      // console.log(value.pages[PageID].table);
+      return value;
+    });
   }
 
   let tablecounterlock: boolean = false;
@@ -129,8 +158,8 @@ function ActivitiesTable(props: {
 
   function sumHrs(): number {
     let count = 0;
-    for (let i = 0; i < props.pages[PageID].table.length; i++) {
-      let row = props.pages[PageID].table[i].hrs;
+    for (let i = 0; i < props.state.pages[PageID].table.length; i++) {
+      let row = props.state.pages[PageID].table[i].hrs;
       if (row) {
         console.log(row);
         count += row;
@@ -141,18 +170,18 @@ function ActivitiesTable(props: {
   //deleterow deletes row from activity
   function deleteRow(id: number) {
     console.log("delete row:" + "Id: " + id.toString());
-    let tempA = props.pages[PageID].table;
+    let tempA = props.state.pages[PageID].table;
     for (let i = 0; i < tempA.length; i++) {
       if (tempA[i].id === id) {
         console.log(i);
         tempA.splice(i, 1);
-        let pages = props.pages;
+        let pages = props.state.pages;
         pages[PageID].table = tempA;
         props.setState({ pages });
       }
     }
     console.log("DeleteRow:");
-    console.log(props.pages[PageID].table);
+    console.log(props.state.pages[PageID].table);
     props.sendData();
   }
   //handleChangeActivity updates state of activity on change
@@ -175,45 +204,6 @@ function ActivitiesTable(props: {
     // console.log(props.pages[PageID].hrs);
   }
 
-  //handleSubmit adds row entry to activity table
-  function handleSubmit(event: any) {
-    event.preventDefault();
-    // console.log(props.pages[PageID].activity + "counter:" + counter());
-    if (!locked()) {
-      lock();
-      let tempTable = props.pages[PageID].table;
-      console.log("adding row: " + tableEntry.hrs);
-      tempTable.push({
-        id: counter(),
-        hrs: tableEntry.hrs,
-        activity: tableEntry.activity,
-      });
-
-      let tempPages: [pageData] = props.pages;
-      tempPages[PageID].table = tempTable;
-      props.setState(tempPages);
-      setTableRow({
-        hrs: NaN,
-        activity: "enter activitiy",
-      });
-      console.log("adding row: " + props.pages[PageID].table[0].hrs);
-      props.sendData();
-      unlock();
-    } else {
-      alert("could not add activity row");
-    }
-    let nextField = document.getElementById("hours");
-    if (nextField) {
-      nextField.focus();
-    }
-
-    props.setState((value: state) => {
-      // console.log("after Adding row:");
-      // console.log(value.pages[PageID].table);
-      return value;
-    });
-  }
-
   function hrsOnEnter(event: any) {
     if (event.keyCode == 13) {
       event.preventDefault();
@@ -224,40 +214,19 @@ function ActivitiesTable(props: {
     }
   }
 
-  //renderTable returns a react node with table rows corresponding to the activitytable array elements.
-  function renderTable() {
-    return props.pages[PageID].table.map((item) => {
-      if (props.pages[PageID].table != []) {
-        return (
-          <tr id={item.id.toString()}>
-            <td>{item.hrs}</td>
-            <td>{item.activity}</td>
-            <td>
-              <button
-                type="button"
-                onClick={() => deleteRow(item.id)}
-              >
-                X
-              </button>
-            </td>
-          </tr>
-        );
-      }
-    });
-  }
   // console.log(
   //   "ActivityTable rendering" + props.pages[PageID].table[0].activity
   // );
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <table className="activitiesTable">
+        <table  className="table">
           <thead>
             <td>Hours</td>
             <td>description</td>
           </thead>
           <tbody>
-            {renderTable()}
+            <TableMap state={props.state} />
             <tr>
               <td>
                 <input
@@ -289,6 +258,41 @@ function ActivitiesTable(props: {
     </div>
   );
 }
+
+//renderTable returns a react node with table rows corresponding to the activitytable array elements.
+let TableMap = (props: { state: state }) => {
+  let rows = props.state.pages[PageID].table.map((item) => {
+    console.log(
+      "DayView: renderTable: updating table with row" + item.id + item.activity
+    );
+    if (item != null) {
+      return (
+        <tr id={item.id.toString()}>
+          <td>{item.hrs}</td>
+          <td>{item.activity}</td>
+          <td>
+            <button
+              type="button"
+              // onClick={() => deleteRow(item.id)}
+            >
+              X
+            </button>
+          </td>
+        </tr>
+      );
+    } else {
+      console.log("DayView: renderTable: map is empty");
+      return (
+        <tr>
+          <td>No entries... yet, time to get some shit done!</td>
+          <td>empty</td>
+          <td>emtry</td>
+        </tr>
+      );
+    }
+  });
+  return <>{rows}</>;
+};
 
 let Form = (props: { formID: string; value: string; setState: any }) => {
   function handleSubmit(event: any) {

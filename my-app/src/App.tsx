@@ -72,7 +72,7 @@ export default class App extends React.Component {
   render() {
     return (
       <div className="App">
-        <h1>Hour Logger</h1>
+        <h1 className="text-center">Hour Logger</h1>
         <Routes>
           <Route
             path="/"
