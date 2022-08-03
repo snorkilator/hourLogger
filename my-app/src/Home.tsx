@@ -43,7 +43,7 @@ function Table(props: { pages: [pageData] }) {
               tally += row.hrs + 0;
             }
           }
-          if (page.table.length !== 0) {
+          if (page.date !== "") {
             return (
               <tr id={page.date}>
                 {/* <td>{page.date}</td> */}

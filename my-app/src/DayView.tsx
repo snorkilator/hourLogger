@@ -35,18 +35,13 @@ export let DayView = (props: { state: state; setState: any }) => {
     newPage = true;
   }
 
-
   // console.log("Rendering DayView with: ");
   // console.log(props.state.pages);
 
   let main = props.state.pages ? (
     <main>
       <h2>{props.state.pages[PageID].date}</h2>
-      <ActivitiesTable
-        state={props.state}
-        setState={props.setState}
-        sendData={sendData}
-      />
+      <ActivitiesTable state={props.state} setState={props.setState} />
       <Form
         formID="Goals"
         value={props.state.pages[PageID].goals}
@@ -67,11 +62,7 @@ export let DayView = (props: { state: state; setState: any }) => {
 };
 
 let count: number = 0;
-function ActivitiesTable(props: {
-  state: state;
-  setState: any;
-  sendData: any;
-}) {
+function ActivitiesTable(props: { state: state; setState: any }) {
   let [tableEntry, setTableRow] = React.useState({
     hrs: NaN,
     activity: "enter activitiy",
@@ -102,7 +93,10 @@ function ActivitiesTable(props: {
         activity: "enter activitiy",
       });
       console.log("adding row: " + props.state.pages[PageID].table[0].hrs);
-      props.sendData();
+      props.setState((state: state) => {
+        // console.log(state.pages[PageID].table[0].hrs || NaN);
+        sendData(state);
+      });
       unlock();
     } else {
       alert("could not add activity row");
@@ -147,7 +141,7 @@ function ActivitiesTable(props: {
     }
     return count;
   }
-  
+
   //handleChangeActivity updates state of activity on change
   function handleChangeActivity(event: any) {
     setTableRow({
@@ -184,13 +178,13 @@ function ActivitiesTable(props: {
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <table  className="table">
+        <table className="table">
           <thead>
             <td>Hours</td>
             <td>description</td>
           </thead>
           <tbody>
-            <TableMap state={props.state} setState={props.setState}/>
+            <TableMap state={props.state} setState={props.setState} />
             <tr>
               <td>
                 <input
@@ -243,7 +237,7 @@ function sendData(state: state) {
     console.log(JSONStr);
     request.send(JSONStr);
   }
-};
+}
 
 //deleterow deletes row from activity
 function deleteRow(id: number, state: state, setState: any) {
@@ -264,7 +258,7 @@ function deleteRow(id: number, state: state, setState: any) {
 }
 
 //renderTable returns a react node with table rows corresponding to the activitytable array elements.
-let TableMap = (props: { state: state, setState:any }) => {
+let TableMap = (props: { state: state; setState: any }) => {
   let rows = props.state.pages[PageID].table.map((item) => {
     console.log(
       "DayView: renderTable: updating table with row" + item.id + item.activity
