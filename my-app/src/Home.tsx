@@ -19,8 +19,20 @@ export default function Home(props: {
   return (
     <div>
       <main>
-        <Table pages={props.pages} />
-        <Link to="/dayview/new">New Page</Link>
+        <div className="container">
+          <Table pages={props.pages} />
+          <div className="row">
+            <div className="col text-center ">
+              <Link
+                className="col-sm-4  btn btn-default  bg-success"
+                to="/dayview/new"
+              >
+                Create New Page
+              </Link>
+              {/* <button className="col-sm-2 btn btn-default bg-success">Centered button</button> */}
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );

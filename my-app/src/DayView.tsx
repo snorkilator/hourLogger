@@ -1,10 +1,14 @@
 import { log } from "node:console";
 import * as React from "react";
 import { Link, useParams } from "react-router-dom";
-import { isPropertyAccessChain } from "typescript";
+import {
+  flattenDiagnosticMessageText,
+  isPropertyAccessChain,
+} from "typescript";
 import "./App.css";
 import type { state } from "./App";
 import { setEnvironmentData } from "node:worker_threads";
+import { getSystemErrorMap } from "node:util";
 
 type row = {
   id: number;
@@ -13,6 +17,7 @@ type row = {
 };
 let PageID = 0;
 let newPage = false;
+let notSavedFlag = true;
 export type pageData = { goals: string; table: row[]; date: string };
 export let DayView = (props: { state: state; setState: any }) => {
   // console.log(document.baseURI);
@@ -39,28 +44,45 @@ export let DayView = (props: { state: state; setState: any }) => {
   // console.log(props.state.pages);
 
   let main = props.state.pages ? (
-    <main>
-      <h2>{props.state.pages[PageID].date}</h2>
-      <ActivitiesTable state={props.state} setState={props.setState} />
-      <Form
-        formID="Goals"
-        value={props.state.pages[PageID].goals}
-        setState={props.setState}
-      />
+    <main className="container-fluid ">
+      <div className="row bg-secondary justify-content-center display-4">
+        {props.state.pages[PageID].date}
+      </div>
+      <div className="row">
+        <div className="col-lg-6">
+          <ActivitiesTable state={props.state} setState={props.setState} />
+        </div>
+        <div className="col-lg-6">
+          <Form formID="Goals" state={props.state} setState={props.setState} />
+        </div>
+      </div>
     </main>
   ) : (
     <main>Loading...</main>
   );
   return (
-    <>
+    <div className="">
       {main}
       <nav>
-        <Link to="/">Home</Link>
+        <Link className="col-lg-2 pull-lg-4 btn bg-success" to="/">
+          Home
+        </Link>
       </nav>
-    </>
+    </div>
   );
 };
-
+let NotSaved = () => {
+  if (notSavedFlag) {
+    return (
+      <div className="row justify-content-center">
+        <div className="col-sm-4 btn bg-warning">
+          Warning: Changes to Goals are not saved, click submit button
+        </div>
+      </div>
+    );
+  }
+  return <div className="row bg-success">Field is up saved</div>;
+};
 let count: number = 0;
 function ActivitiesTable(props: { state: state; setState: any }) {
   let [tableEntry, setTableRow] = React.useState({
@@ -177,7 +199,7 @@ function ActivitiesTable(props: { state: state; setState: any }) {
   // );
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <form className=" form-group" onSubmit={handleSubmit}>
         <table className="table">
           <thead>
             <td>Hours</td>
@@ -188,6 +210,7 @@ function ActivitiesTable(props: { state: state; setState: any }) {
             <tr>
               <td>
                 <input
+                  className="form-control"
                   id="hours"
                   type="number"
                   value={tableEntry.hrs}
@@ -197,6 +220,7 @@ function ActivitiesTable(props: { state: state; setState: any }) {
               </td>
               <td>
                 <input
+                  className="form-control"
                   id="activity"
                   type="text"
                   value={tableEntry.activity}
@@ -204,7 +228,11 @@ function ActivitiesTable(props: { state: state; setState: any }) {
                 ></input>
               </td>
               <td>
-                <input type="submit" value="+" />
+                <input
+                  className="form-control btn btn-outline-secondary"
+                  type="submit"
+                  value="+"
+                />
               </td>
             </tr>
           </tbody>
@@ -221,7 +249,6 @@ function sendData(state: state) {
   if (state.pages[PageID]) {
     // add error handlingprops.pages[PageID].table[1].activity
     console.log("interval send: " + state.pages[PageID].date);
-    let table = state.pages[PageID].table;
     let JSONStr = JSON.stringify(state.pages[PageID]);
     let request = new XMLHttpRequest();
     request.open(newPage ? "post" : "put", "/update/");
@@ -270,6 +297,7 @@ let TableMap = (props: { state: state; setState: any }) => {
           <td>{item.activity}</td>
           <td>
             <button
+              className="btn btn-secondary"
               type="button"
               onClick={() => deleteRow(item.id, props.state, props.setState)}
             >
@@ -292,24 +320,65 @@ let TableMap = (props: { state: state; setState: any }) => {
   return <>{rows}</>;
 };
 
-let Form = (props: { formID: string; value: string; setState: any }) => {
-  function handleSubmit(event: any) {
-    console.log(props.formID + " " + props.value);
-    event.preventDefault();
+//not modular currently!!
+let Form = (props: { formID: string; state: state; setState: any }) => {
+  function updateGoal(event: any, state: state, setState: any) {
+    let tempState = state;
+    tempState.pages[PageID].goals = event.target.value;
+    setState((state: state) => {
+      console.log("Update Goals before:");
+      console.log(state.pages[PageID].goals);
+      return tempState;
+    });
+    setState((state: state) => {
+      console.log("updateGoals after:");
+      console.log(state.pages[PageID].goals);
+    });
   }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className="row">
+      <form
+        onSubmit={(event) => event.preventDefault()}
+        onChange={(event) => updateGoal(event, props.state, props.setState)}
+        className="form text-center"
+      >
         <label>{props.formID}</label>
         <br />
         <textarea
-          value={props.value}
-          onChange={(event) => props.setState(event.target.value)}
+          className="form-control"
+          value={props.state.pages[PageID].goals}
+          onChange={(event) => props.setState({} as state)}
         />
         <br />
-        <input type="submit" value="Submit" />
+        <NotSaved />
+        <input
+          className="btn btn-outline-secondary"
+          type="submit"
+          value="Submit"
+        />
       </form>
     </div>
   );
 };
+
+// React.useEffect
+//
+// local form State
+//
+// global state
+//
+// get current global state and set it to goals on component Mount
+// when globalstate.goals changes update local state (useeffect(updatefunction, goals))
+// on form change update local
+// on submit update global and call sendData
+//
+// changes not saved System
+// up to date flag
+// onmount get current global state
+// function that shows warning and asks if you want to save progress on goals form
+// little indicator above goals form
+// onchange upToDate flag is false
+// on sendData upToDate is true
+// (ideally only when goals is mismatched with DB (or at least global state) upToDate is false)
+// Watch video on autosave. like youtube what docs does for this feature

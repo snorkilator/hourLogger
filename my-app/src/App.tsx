@@ -6,26 +6,6 @@ import "./App.css";
 import Home from "./Home";
 import { pageData } from "./DayView";
 
-/*
-Receiving
-How does the transaction work?
-  initiate the request with get command
-  use page date as ID
-  send ID in url as page path
-    react router link on main page
-    link sends you to the page display
-      before page displays, do pull from database,
-        unwrap into object
-          populate state with object
-      Display page
-      if pull fails, display error message in alert box
-When do I want to get current state from server?
-- after, sending current state to server with good response
-  - do that on time intervols
-- Onload of page, receive current DB status
-- after a certain amount of changed to the website (nice to have, maybe not necessary) 
-*/
-
 export type state = { pages: [pageData] };
 export default class App extends React.Component {
   state: state;
@@ -71,8 +51,10 @@ export default class App extends React.Component {
   }
   render() {
     return (
-      <div className="App">
-        <h1 className="text-center">Hour Logger</h1>
+      <div className="container-fluid App">
+        <header className="row navbar text-center bg-success">
+          <h1 className="display-1">Hour Logger</h1>
+        </header>
         <Routes>
           <Route
             path="/"
@@ -93,14 +75,3 @@ export default class App extends React.Component {
     );
   }
 }
-
-/*
-
-post and put flag
-post
-   when opening create dayview page
-
-put
-    opening directly to dayiew/someDate
-    when clicking on link to
-*/
