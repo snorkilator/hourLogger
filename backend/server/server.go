@@ -217,6 +217,7 @@ type config struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	} `json:"database"`
+	PasswordRoot string `json:"serverRoot"`
 }
 
 //getConf reads config json file stored at current directory and resturns

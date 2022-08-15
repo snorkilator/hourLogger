@@ -8,6 +8,8 @@ add to config path for web resources
     change struct
     
     change config file
+
+    plug serverroot path into fileServer in go server.go
     
 
 # hourLogger
