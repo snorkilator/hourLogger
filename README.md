@@ -1,9 +1,14 @@
 # TODO
 consider rewriting
+
 untangle state chain
+
 add to config path for web resources
+
     change struct
+    
     change config file
+    
 
 # hourLogger
 A website to log hours for Be and Become 
